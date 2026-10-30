@@ -1,0 +1,6 @@
+@Pigeon.Api_HostAddress = http://localhost:5062
+
+GET {{Pigeon.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
