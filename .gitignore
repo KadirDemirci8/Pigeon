@@ -1,0 +1,21 @@
+# React / JavaScript
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+
+# ASP.NET Core / C#
+bin/
+obj/
+.vs/
+*.user
+
+# Local configuration and secrets
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+# Operating system
+.DS_Store
+Thumbs.db
