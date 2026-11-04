@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Pigeon.Api.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Pigeon.Api
 {
@@ -14,6 +17,32 @@ namespace Pigeon.Api
                 options.UseSqlServer(
             builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddOpenApi();
+
+            var jwtSettings = builder.Configuration.GetSection("Jwt");
+
+            var jwtKey = Convert.FromBase64String(
+                jwtSettings["Key"]!);
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = jwtSettings["Issuer"],
+
+                        ValidateAudience = true,
+                        ValidAudience = jwtSettings["Audience"],
+
+                        ValidateLifetime = true,
+
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(jwtKey),
+
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
+
 
             // Allow our React frontend to access the API
             builder.Services.AddCors(options =>
@@ -36,6 +65,8 @@ namespace Pigeon.Api
             app.UseHttpsRedirection();
 
             app.UseCors("ReactApp");
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

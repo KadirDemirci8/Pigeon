@@ -5,6 +5,11 @@ using Pigeon.Api.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Pigeon.Api.Models;
 using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace Pigeon.Api.Controllers
 {
@@ -14,11 +19,13 @@ namespace Pigeon.Api.Controllers
     {
 
         private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
         private readonly PasswordHasher<User> _passwordHasher = new();
 
-        public AuthController(AppDbContext context)
+        public AuthController(AppDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
 
@@ -57,6 +64,78 @@ namespace Pigeon.Api.Controllers
             });
         }
 
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto request)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == request.Email);
+
+            if (user == null)
+            {
+                return Unauthorized("Invalid email or password.");
+            }
+
+            var result = _passwordHasher.VerifyHashedPassword(
+                user, user.PasswordHash, request.Password);
+
+            if (result == PasswordVerificationResult.Failed)
+            {
+                return Unauthorized("Invalid email or password.");
+            }
+
+
+
+            var token = GenerateJwtToken(user);
+
+            return Ok(new
+            {
+                message = "Login successful!",
+                userId = user.Id,
+                accessToken = token
+            });
+
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public IActionResult GetCurrentUser()
+        {
+            return Ok(new
+            {
+                message = "You are authenticated!",
+                username = User.Identity?.Name
+            });
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var jwtSettings = _configuration.GetSection("Jwt");
+
+            var key = new SymmetricSecurityKey(
+                Convert.FromBase64String(jwtSettings["Key"]!));
+
+            var credentials = new SigningCredentials(
+                key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                    new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                };
+            var token = new JwtSecurityToken(
+                    issuer: jwtSettings["Issuer"],
+                    audience: jwtSettings["Audience"],
+                    claims: claims,
+                    expires: DateTime.UtcNow.AddMinutes(
+                        double.Parse(jwtSettings["ExpiryMinutes"]!)),
+                    signingCredentials: credentials
+                                 );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+
+        }
 
 
     }
