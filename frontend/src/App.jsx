@@ -2,6 +2,9 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './App.css'
+import { Routes, Route } from 'react-router-dom'
+import Login from './pages/Login'
+import Register from './pages/Register'
 
 function App() {
   const [message, setMessage] = useState('Loading...')
@@ -18,10 +21,17 @@ function App() {
   }, [])
 
   return (
-    <div>
-      <h1>Welcome to Pigeon</h1>
-      <p>{message}</p>
-    </div>
+  <Routes>
+    <Route path="/" element={
+      <div>
+        <h1>Welcome to Pigeon</h1>
+        <p>{message}</p>
+      </div>
+    } />
+
+    <Route path="/login" element={<Login />} />
+    <Route path="/register" element={<Register />} />
+  </Routes>
   )
 }
 
