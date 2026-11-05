@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
+import AuthContext from '../context/AuthContext'
 import axios from 'axios'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 
 function Login() {
@@ -8,6 +9,8 @@ function Login() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [message, setMessage] = useState('')
+    const navigate = useNavigate()
+    const { setToken } = useContext(AuthContext)    
     const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -21,6 +24,7 @@ function Login() {
         )
 
         sessionStorage.setItem('accessToken', response.data.accessToken)
+        setToken(response.data.accessToken)
         setMessage(response.data.message)
         const meResponse = await axios.get(
     'https://localhost:7151/api/auth/me',
@@ -32,6 +36,7 @@ function Login() {
 )
 
 console.log('Authenticated user:', meResponse.data)
+navigate('/home')
     } catch (error) {
         console.error('Login failed:', error)
         setMessage('Invalid email or password.')
