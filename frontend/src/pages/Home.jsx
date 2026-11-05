@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthContext from '../context/AuthContext'
+import MainLayout from '../components/MainLayout'
 
 
 function Home() {
@@ -13,6 +14,7 @@ function Home() {
     }
 
     return (
+    <MainLayout>
         <div>
             <h1>Welcome to Pigeon!</h1>
             <p>You are logged in.</p>
@@ -21,7 +23,8 @@ function Home() {
                 Logout
             </button>
         </div>
-    )
+    </MainLayout>
+)
 }
 
 export default Home
