@@ -1,9 +1,32 @@
 import { useState } from 'react'
 import './PostComposer.css'
 import { Image, Smile, BarChart3 } from 'lucide-react'
+import axios from 'axios'
 
-function PostComposer() {
+function PostComposer({ onPostCreated }) {
     const [content, setContent] = useState('')
+    const handlePost = async () => {
+        if (!content.trim()) return
+
+        try {
+            const token = sessionStorage.getItem('accessToken')
+
+            await axios.post(
+                'https://localhost:7151/api/posts',
+                { content: content.trim() },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setContent('')
+            onPostCreated()
+        } catch (error) {
+            console.error('Failed to create post:', error)
+        }
+    }
 
     return (
         <div className="post-composer">
@@ -33,7 +56,12 @@ function PostComposer() {
                     </button>
                 </div>
 
-                <button type="button" className="composer-submit">
+                <button
+                    type="button"
+                    className="composer-submit"
+                    onClick={handlePost}
+                    disabled={!content.trim()}
+                >
                     Post
                 </button>
             </div>

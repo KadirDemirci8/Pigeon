@@ -1,20 +1,32 @@
 import PostCard from './PostCard'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 
-function Feed() {
-    const posts = [
-        {
-            id: 1,
-            displayName: 'Alex Carter',
-            username: 'alexcarter',
-            content: 'Sunset views never get old!'
-        },
-        {
-            id: 2,
-            displayName: 'Elif Kaya',
-            username: 'elifkaya',
-            content: 'Coffee, code and a little progress on Pigeon!'
-        }
-    ]
+function Feed({ refreshKey }) {
+    const [posts, setPosts] = useState([])
+
+    useEffect(() => {
+                        const fetchPosts = async () => {
+                            try {
+                                const token = sessionStorage.getItem('accessToken')
+
+                                const response = await axios.get(
+                                    'https://localhost:7151/api/posts',
+                                    {
+                                        headers: {
+                                            Authorization: `Bearer ${token}`
+                                        }
+                                    }
+                                )
+
+                                setPosts(response.data)
+                            } catch (error) {
+                                console.error('Failed to load posts:', error)
+                            }
+                        }
+
+                        fetchPosts()
+                    }, [refreshKey])
 
     return (
         <div className="feed">

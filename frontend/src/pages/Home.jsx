@@ -8,6 +8,7 @@ import './Home.css'
 import Feed from '../components/Feed'
 
 
+
 function Home() {
     const { logout } = useContext(AuthContext)
     const navigate = useNavigate()
@@ -17,6 +18,7 @@ function Home() {
         navigate('/login')
     }
     const [activeTab, setActiveTab] = useState('forYou')
+    const [refreshKey, setRefreshKey] = useState(0)
 
     return (
     <MainLayout>
@@ -40,9 +42,11 @@ function Home() {
                 </button>
             </div>
 
-        <PostComposer />
+        <PostComposer
+            onPostCreated={() => setRefreshKey(prev => prev + 1)}
+        />
 
-        <Feed />
+        <Feed refreshKey={refreshKey} />
 
         <button onClick={handleLogout}>
             Logout
