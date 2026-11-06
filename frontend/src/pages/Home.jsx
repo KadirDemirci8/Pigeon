@@ -2,6 +2,10 @@ import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthContext from '../context/AuthContext'
 import MainLayout from '../components/MainLayout'
+import PostComposer from '../components/PostComposer'
+import { useState } from 'react'
+import './Home.css'
+import Feed from '../components/Feed'
 
 
 function Home() {
@@ -12,18 +16,39 @@ function Home() {
         logout()
         navigate('/login')
     }
+    const [activeTab, setActiveTab] = useState('forYou')
 
     return (
     <MainLayout>
-        <div>
-            <h1>Welcome to Pigeon!</h1>
-            <p>You are logged in.</p>
+    <div className="home-page">
+        <h1>Home</h1>
+            <div className="feed-tabs">
+                <button
+                    type="button"
+                    className={activeTab === 'forYou' ? 'active' : ''}
+                    onClick={() => setActiveTab('forYou')}
+                >
+                    For You
+                </button>
 
-            <button onClick={handleLogout}>
-                Logout
-            </button>
-        </div>
-    </MainLayout>
+                <button
+                    type="button"
+                    className={activeTab === 'following' ? 'active' : ''}
+                    onClick={() => setActiveTab('following')}
+                >
+                    Following
+                </button>
+            </div>
+
+        <PostComposer />
+
+        <Feed />
+
+        <button onClick={handleLogout}>
+            Logout
+        </button>
+    </div>
+</MainLayout>
 )
 }
 

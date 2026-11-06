@@ -80,3 +80,34 @@
     margin: 8px 0 24px;
     object-fit: contain;
 }
+/* Tablet ekranları */
+@media (max-width: 1100px) {
+    .main-layout {
+        grid-template-columns: 220px minmax(0, 1fr);
+    }
+
+    .right-sidebar {
+        display: none;
+    }
+}
+
+/* Telefon ekranları */
+@media (max-width: 600px) {
+    .main-layout {
+        display: block;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .left-sidebar,
+    .right-sidebar {
+        display: none;
+    }
+
+    .main-content {
+        width: 100%;
+        padding: 16px;
+        min-width: 0;
+        padding-bottom: 85px;
+    }
+}

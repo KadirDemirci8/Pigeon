@@ -1,6 +1,8 @@
 import './MainLayout.css'
 import { NavLink } from 'react-router-dom'
 import { House, Compass, Bell, Bookmark, UserRound } from 'lucide-react'
+import RightPanel from './RightPanel'
+import MobileNav from './MobileNav'
 
 function MainLayout({ children }) {
     return (
@@ -48,8 +50,9 @@ function MainLayout({ children }) {
             </main>
 
             <aside className="right-sidebar">
-                <p>Search & Suggestions</p>
+                <RightPanel />
             </aside>
+            <MobileNav />
         </div>
     )   
 }

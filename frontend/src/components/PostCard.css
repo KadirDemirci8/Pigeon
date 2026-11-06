@@ -1,0 +1,149 @@
+.post-card {
+    background: #ffffff;
+    border: 1px solid #f0e5e8;
+    border-radius: 20px;
+    padding: 20px;
+    margin-top: 16px;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.post-avatar {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff9b45, #f53679);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.post-header strong {
+    color: #252525;
+}
+
+.post-header span {
+    color: #888;
+    font-size: 14px;
+}
+
+.post-card p {
+    margin: 0;
+    color: #333;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.post-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #f3d7de;
+}
+
+.post-actions button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #503b3b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.post-actions .action-like:hover {
+    background: #ffe5ef;
+    color: #f53679;
+}
+
+.post-actions .action-comment:hover {
+    background: #fff0dd;
+    color: #f18b45;
+}
+
+.post-actions .action-repost:hover {
+    background: #dff8ef;
+    color: #14a68b;
+}
+
+.post-actions .action-bookmark:hover {
+    background: #efe8ff;
+    color: #8f6ad4;
+}
+
+.post-actions .action-like.liked {
+    color: #f8256f;
+    background: #f5ecf0;
+}
+
+.post-actions .action-bookmark.bookmarked {
+    color: #8f6ad4;
+    background: #f5f0fd;
+}
+
+.post-actions .action-repost.reposted {
+    color: #1ca088;
+    background: #eafaf3;
+}
+
+/* Yorum yazma alanı */
+.comment-section {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f0e5e8;
+}
+
+.comment-section textarea {
+    flex: 1;
+    min-width: 0;
+    min-height: 48px;
+    padding: 12px 14px;
+    border: 1px solid #f0d8dc;
+    border-radius: 16px;
+    background: #fae2df;
+    font-family: inherit;
+    font-size: 14px;
+    resize: none;
+}
+
+.comment-section textarea:focus {
+    outline: 2px solid #f5a6b8;
+    outline-offset: 1px;
+}
+
+.comment-section button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 24px;
+    background: linear-gradient(110deg, #ff9b45, #f53679);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.comment-section button:hover {
+    opacity: 0.85;
+}
+
+
+.post-actions .action-comment.comment-open {
+    color: #f18b45;
+    background: #fff0dd;
+}

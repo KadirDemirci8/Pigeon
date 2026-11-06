@@ -1,0 +1,90 @@
+.post-composer {
+    background: #ffffff;
+    border: 1px solid #f0e5e8;
+    border-radius: 20px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.post-composer textarea {
+    width: 100%;
+    min-height: 70px;
+    padding: 12px;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 16px;
+    background: #FFE8E1;
+    border-radius: 20px;
+    flex: 1;
+    min-width: 0;
+    resize: none;
+}
+
+.post-composer button {
+    margin-top: 12px;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(110deg, #ff9b45, #f53679);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+
+/* Avatar ve yazı alanı */
+.composer-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.composer-avatar {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff9b45, #f53679);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* Alt araç çubuğu */
+.composer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+}
+
+.composer-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.post-composer .composer-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px;
+    margin-top: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #ed5b7d;
+    cursor: pointer;
+}
+
+.post-composer .composer-icon:hover {
+    background: #fae2df;
+}
+
+.post-composer .composer-submit {
+    margin-top: 0;
+    padding: 12px 28px;
+}
