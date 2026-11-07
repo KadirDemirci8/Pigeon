@@ -46,7 +46,11 @@ function Home() {
             onPostCreated={() => setRefreshKey(prev => prev + 1)}
         />
 
-        <Feed refreshKey={refreshKey} />
+       <Feed
+            refreshKey={refreshKey}
+            currentUserId={Number(sessionStorage.getItem('userId'))}
+            onPostDeleted={() => setRefreshKey(prev => prev + 1)}
+        />
 
         <button onClick={handleLogout}>
             Logout

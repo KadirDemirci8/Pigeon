@@ -68,14 +68,43 @@ namespace Pigeon.Api.Controllers
                 .Select(p => new
                 {
                     id = p.Id,
+                    userId = p.UserId,
                     content = p.Content,
                     createdAt = p.CreatedAt,
                     username = p.User.Username,
-                    displayName = p.User.DisplayName
+                    displayName = p.User.DisplayName,
                 })
                 .ToListAsync();
 
             return Ok(posts);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePost(int id)
+        {
+            var post = await _context.Posts.FindAsync(id);
+
+            if (post == null)
+            {
+                return NotFound();
+            }
+            var userId = GetCurrentUserId();
+
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            if (post.UserId != userId.Value)
+            {
+                return Forbid();
+
+            }
+            _context.Posts.Remove(post);
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

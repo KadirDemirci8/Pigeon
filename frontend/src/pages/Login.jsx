@@ -24,6 +24,8 @@ function Login() {
         )
 
         sessionStorage.setItem('accessToken', response.data.accessToken)
+        sessionStorage.setItem('userId', response.data.userId)
+        
         setToken(response.data.accessToken)
         setMessage(response.data.message)
         const meResponse = await axios.get(

@@ -1,8 +1,36 @@
 import './PostCard.css'
-import { Heart, MessageCircle, Repeat2, Bookmark } from 'lucide-react'
+import { Heart, MessageCircle, Repeat2, Bookmark, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import axios from 'axios'
 
-function PostCard({ post }) {
+function PostCard({ post, currentUserId, onPostDeleted }) {
+
+    const isOwner = Number(post.userId) === Number(currentUserId)
+
+    const handleDelete = async () => {
+    const confirmed = window.confirm(
+                'Are you sure you want to delete this post?'
+            )
+
+            if (!confirmed) return
+
+            try {
+                const token = sessionStorage.getItem('accessToken')
+
+                await axios.delete(
+                    `https://localhost:7151/api/posts/${post.id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                )
+                onPostDeleted()
+                console.log('Post deleted successfully!')
+            } catch (error) {
+                console.error('Failed to delete post:', error)
+            }
+        }
 
     const [isLiked, setIsLiked] = useState(false)
     const [isBookmarked, setIsBookmarked] = useState(false)
@@ -15,10 +43,20 @@ function PostCard({ post }) {
                     {post.displayName.charAt(0)}
                 </div>
 
-                <div>
+                <div className="post-user-info">
                     <strong>{post.displayName}</strong>
                     <span> @{post.username}</span>
                 </div>
+                {isOwner && (
+                <button
+                    type="button"
+                    className="delete-post-button"
+                    aria-label="Delete post"
+                    onClick={handleDelete}
+                >
+                    <Trash2 size={18} />
+                </button>
+                )}
             </div>
 
             <p>{post.content}</p>
