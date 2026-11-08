@@ -45,12 +45,20 @@
 }
 
 .post-actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     align-items: center;
-    justify-content: space-between;
     margin-top: 18px;
     padding-top: 14px;
     border-top: 1px solid #f3d7de;
+}
+.post-actions button {
+    justify-self: center;
+}
+
+.action-like .like-count {
+    margin-left: 6px;
+    font-size: 13px;
 }
 
 .post-actions button {
@@ -173,4 +181,9 @@
 
 .delete-post-button {
     margin-left: 0;
+}
+
+.action-like .like-count {
+    margin-left: 6px;
+    font-size: 13px;
 }

@@ -11,5 +11,6 @@
         public int UserId { get; set; }
 
         public User User { get; set; } = null!;
+        public ICollection<Like> Likes { get; set; } = new List<Like>();
     }
 }

@@ -32,7 +32,43 @@ function PostCard({ post, currentUserId, onPostDeleted }) {
             }
         }
 
-    const [isLiked, setIsLiked] = useState(false)
+        const handleLike = async () => {
+    try {
+        const token = sessionStorage.getItem('accessToken')
+
+        if (isLiked) {
+            await axios.delete(
+                `https://localhost:7151/api/posts/${post.id}/like`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setIsLiked(false)
+            setLikeCount(prev => prev - 1)
+        } else {
+            await axios.post(
+                `https://localhost:7151/api/posts/${post.id}/like`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setIsLiked(true)
+            setLikeCount(prev => prev + 1)
+        }
+    } catch (error) {
+        console.error('Failed to update like:', error)
+    }
+}
+
+    const [isLiked, setIsLiked] = useState(post.isLiked)
+    const [likeCount, setLikeCount] = useState(post.likeCount)
     const [isBookmarked, setIsBookmarked] = useState(false)
     const [isReposted, setIsReposted] = useState(false)
     const [isCommentOpen, setIsCommentOpen] = useState(false)
@@ -64,11 +100,12 @@ function PostCard({ post, currentUserId, onPostDeleted }) {
                 <button
                     type="button"
                     className={`action-like ${isLiked ? 'liked' : ''}`}
-                    onClick={() => setIsLiked(!isLiked)}
+                    onClick={handleLike}
                     aria-label={isLiked ? 'Unlike' : 'Like'}
                     aria-pressed={isLiked}
                 >
                     <Heart size={19} fill={isLiked ? 'currentColor' : 'none'} />
+                    {likeCount > 0 && <span className="like-count">{likeCount}</span>}
                 </button>
 
                 <button
