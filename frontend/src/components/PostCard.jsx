@@ -1,7 +1,8 @@
 import './PostCard.css'
-import { Heart, MessageCircle, Repeat2, Bookmark, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Send, ChevronDown, CornerUpLeft, MoreHorizontal } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
+
 
 function PostCard({ post, currentUserId, onPostDeleted }) {
 
@@ -72,6 +73,71 @@ function PostCard({ post, currentUserId, onPostDeleted }) {
     const [isBookmarked, setIsBookmarked] = useState(false)
     const [isReposted, setIsReposted] = useState(false)
     const [isCommentOpen, setIsCommentOpen] = useState(false)
+    const [comments, setComments] = useState([])
+    const [commentContent, setCommentContent] = useState('')
+    const [isSortOpen, setIsSortOpen] = useState(false)
+
+    const handleComment = async () => {
+                if (!commentContent.trim()) return
+
+                try {
+                    const token = sessionStorage.getItem('accessToken')
+
+                    await axios.post(
+                        `https://localhost:7151/api/posts/${post.id}/comments`,
+                        {
+                            content: commentContent.trim()
+                        },
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`
+                            }
+                        }
+                    )
+
+                    const response = await axios.get(
+                    `https://localhost:7151/api/posts/${post.id}/comments`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                )
+
+                setComments(response.data)
+                    
+                    setCommentContent('')
+
+                } catch (error) {
+                    console.error('Failed to create comment:', error)
+                }
+            }
+
+    useEffect(() => {
+        if (!isCommentOpen) return
+
+        const fetchComments = async () => {
+            try {
+                const token = sessionStorage.getItem('accessToken')
+
+                const response = await axios.get(
+                    `https://localhost:7151/api/posts/${post.id}/comments`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                )
+
+                setComments(response.data)
+            } catch (error) {
+                console.error('Failed to load comments:', error)
+            }
+        }
+
+        fetchComments()
+    }, [isCommentOpen, post.id])
+
     return (
         <article className="post-card">
             <div className="post-header">
@@ -142,11 +208,91 @@ function PostCard({ post, currentUserId, onPostDeleted }) {
                 </button>
             </div>
                             {isCommentOpen && (
-                    <div className="comment-section">
-                        <textarea placeholder="Write a comment..." />
-                        <button type="button">Reply</button>
+            <div className="comment-section">
+
+                
+                <div className="comments-header">
+                    <div className="comments-title">
+                        <img
+                            className="comments-bird"
+                            src="/Pigeon-Logo-Bird.png"
+                            alt=""
+                        />
+                        <h3>Comments ({comments.length})</h3>
                     </div>
-                )}
+
+                    <div className="comments-sort-wrapper">
+                        <button
+                            type="button"
+                            className="comments-sort-trigger"
+                            onClick={() => setIsSortOpen(!isSortOpen)}
+                        >
+                            Most recent
+                            <ChevronDown size={16} />
+                        </button>
+
+                        {isSortOpen && (
+                            <div className="comments-sort-menu">
+                                <button type="button">Most recent</button>
+                                <button type="button">Oldest first</button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                
+                <div className="comments-list">
+                    {comments.map((comment) => (
+                    <div key={comment.id} className="comment-row">
+                        <div className="comment-avatar">
+                            {comment.displayName.charAt(0)}
+                        </div>
+
+                        <div className="comment-item">
+                            <strong>{comment.displayName}</strong>
+                            <span> @{comment.username}</span>
+                            <p>{comment.content}</p>
+                            <div className="comment-actions">
+                                <button type="button" aria-label="Like comment">
+                                    <Heart size={15} />
+                                </button>
+
+                                <button type="button" className="comment-reply">
+                                    <CornerUpLeft size={15} />
+                                    <span>Reply</span>
+                                </button>
+
+                                <button type="button" aria-label="More options">
+                                    <MoreHorizontal size={18} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+                </div>
+
+                <div className="comment-composer">
+    <div className="comment-composer-avatar">
+        {post.displayName.charAt(0)}
+    </div>
+
+    <textarea
+                placeholder="Write a comment..."
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.target.value)}
+            />
+
+            <button
+                type="button"
+                onClick={handleComment}
+                disabled={!commentContent.trim()}
+                aria-label="Send comment"
+            >
+                <Send size={20} />
+            </button>
+        </div>
+
+            </div>
+        )}
         </article>
     )
 }

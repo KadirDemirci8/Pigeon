@@ -172,5 +172,66 @@ namespace Pigeon.Api.Controllers
 
             return NoContent();
         }
+
+        [HttpPost("{id}/comments")]
+        public async Task<IActionResult> CreateComment(
+        int id, [FromBody] CreateCommentDto request)
+        {
+            var post = await _context.Posts.FindAsync(id);
+
+            if (post == null)
+            {
+                return NotFound();
+            }
+            var userId = GetCurrentUserId();
+
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            var content = request.Content?.Trim();
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return BadRequest("Comment cannot be empty.");
+            }
+
+            var comment = new Comment
+            {
+                Content = content!,
+                UserId = userId.Value,
+                PostId = id
+            };
+
+            _context.Comments.Add(comment);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Comment created successfully!",
+                commentId = comment.Id
+            });
+        }
+        [HttpGet("{id}/comments")]
+        public async Task<IActionResult> GetComments(int id)
+        {
+            var comments = await _context.Comments
+                .AsNoTracking()
+                .Where(c => c.PostId == id)
+                .OrderBy(c => c.CreatedAt)
+                .Select(c => new
+                {
+                    id = c.Id,
+                    content = c.Content,
+                    createdAt = c.CreatedAt,
+                    userId = c.UserId,
+                    username = c.User.Username,
+                    displayName = c.User.DisplayName
+                })
+                .ToListAsync();
+            return Ok(comments);
+        }
     }
 }
