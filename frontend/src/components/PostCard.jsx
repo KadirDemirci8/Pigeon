@@ -2,6 +2,7 @@ import './PostCard.css'
 import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Send, ChevronDown, CornerUpLeft, MoreHorizontal } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { Link } from 'react-router-dom'
 
 
 function PostCard({ post, currentUserId, onPostDeleted }) {
@@ -171,13 +172,21 @@ function PostCard({ post, currentUserId, onPostDeleted }) {
     return (
         <article className="post-card">
             <div className="post-header">
-                <div className="post-avatar">
+                <Link
+                    to={`/profile/${post.username}`}
+                    className="post-avatar post-avatar-link"
+                >
                     {post.displayName.charAt(0)}
-                </div>
+                </Link>
 
                 <div className="post-user-info">
-                    <strong>{post.displayName}</strong>
-                    <span> @{post.username}</span>
+                    <Link
+                        to={`/profile/${post.username}`}
+                        className="post-profile-link"
+                    >
+                        <strong>{post.displayName}</strong>
+                        <span> @{post.username}</span>
+                    </Link>
                 </div>
                 {isOwner && (
                 <button

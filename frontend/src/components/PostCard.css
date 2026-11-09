@@ -478,3 +478,20 @@
     background: #ffe1e8 !important;
     color: #e63965 !important;
 }
+.post-profile-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.post-profile-link:hover strong {
+    text-decoration: underline;
+}
+.post-avatar-link {
+    text-decoration: none;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.post-avatar-link:hover {
+    opacity: 0.85;
+}

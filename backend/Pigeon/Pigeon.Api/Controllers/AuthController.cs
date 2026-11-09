@@ -92,6 +92,7 @@ namespace Pigeon.Api.Controllers
             {
                 message = "Login successful!",
                 userId = user.Id,
+                username = user.Username,
                 accessToken = token
             });
 

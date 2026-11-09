@@ -1,0 +1,130 @@
+.profile-page {
+    width: 100%;
+    min-width: 0;
+}
+
+.profile-header {
+    width: 100%;
+    border: 1px solid #f3e2e5;
+    border-radius: 18px;
+    background: #ffffff;
+    overflow: hidden;
+}
+.profile-cover {
+    width: 100%;
+    height: 180px;
+    background: linear-gradient(120deg, #ff9b45, #f53679);
+}
+
+.profile-info {
+    position: relative;
+    padding: 55px 24px 24px;
+}
+
+.profile-avatar {
+    position: absolute;
+    top: -45px;
+    left: 24px;
+
+    width: 84px;
+    height: 84px;
+    border: 4px solid white;
+    border-radius: 50%;
+
+    background: linear-gradient(135deg, #ff9b45, #f53679);
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.profile-info h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.profile-username {
+    margin: 5px 0 16px;
+    color: #85747d;
+}
+
+.profile-bio {
+    margin: 0 0 16px;
+    line-height: 1.5;
+}
+.profile-edit-button {
+    position: absolute;
+    top: 16px;
+    right: 24px;
+
+    padding: 10px 20px;
+    border: none;
+    border-radius: 24px;
+
+    background: linear-gradient(135deg, #ff9b45, #f53679);
+    color: white;
+
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.profile-edit-button:hover {
+    opacity: 0.85;
+}
+
+.profile-tabs {
+    display: flex;
+    margin: 20px 0 16px;
+    border-bottom: 1px solid #f3e2e5;
+}
+
+.profile-tab {
+    padding: 14px 24px;
+    border: none;
+    border-bottom: 3px solid transparent;
+    background: transparent;
+    color: #85747d;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.profile-tab.active {
+    color: #f53679;
+    border-bottom-color: #f53679;
+}
+.profile-back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: #775e6c;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.profile-back-button:hover {
+    background: #fff0f3;
+    color: #f53679;
+}
+.profile-joined {
+    margin-top: 12px;
+    color: #85747d;
+    font-size: 13px;
+}
+.profile-empty-posts {
+    padding: 32px 16px;
+    text-align: center;
+    color: #85747d;
+    font-size: 14px;
+}

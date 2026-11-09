@@ -25,6 +25,7 @@ function Login() {
 
         sessionStorage.setItem('accessToken', response.data.accessToken)
         sessionStorage.setItem('userId', response.data.userId)
+        sessionStorage.setItem('username', response.data.username)
         
         setToken(response.data.accessToken)
         setMessage(response.data.message)

@@ -6,6 +6,7 @@ import { Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Home from './pages/Home'
+import Profile from './pages/Profile'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -31,17 +32,25 @@ function App() {
       </div>
     } />
 
-    <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login />} />
     <Route path="/register" element={<Register />} />
+
     <Route
-    path="/home"
-    element={
-        <ProtectedRoute>
-            <Home />
-        </ProtectedRoute>
+        path="/home"
+        element={
+            <ProtectedRoute>
+                <Home />
+            </ProtectedRoute>
         }
     />
+
+    <Route
+        path="/profile/:username"
+        element={<Profile />}
+    />
+
   </Routes>
+  
   )
 }
 

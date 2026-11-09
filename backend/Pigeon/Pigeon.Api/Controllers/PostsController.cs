@@ -81,6 +81,31 @@ namespace Pigeon.Api.Controllers
 
             return Ok(posts);
         }
+        [AllowAnonymous]
+        [HttpGet("user/{username}")]
+        public async Task<IActionResult> GetUserPosts(string username)
+        {
+            var userId = GetCurrentUserId();
+
+            var posts = await _context.Posts
+                .AsNoTracking()
+                .Where(p => p.User.Username == username)
+                .OrderByDescending(p => p.CreatedAt)
+                .Select(p => new
+                {
+                    id = p.Id,
+                    userId = p.UserId,
+                    content = p.Content,
+                    createdAt = p.CreatedAt,
+                    username = p.User.Username,
+                    displayName = p.User.DisplayName,
+                    likeCount = p.Likes.Count(),
+                    isLiked = p.Likes.Any(l => l.UserId == userId)
+                })
+                .ToListAsync();
+
+            return Ok(posts);
+        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePost(int id)

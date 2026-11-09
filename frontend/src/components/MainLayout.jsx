@@ -34,7 +34,7 @@ function MainLayout({ children }) {
                         <span>Bookmarks</span>
                     </NavLink>
 
-                    <NavLink to="/profile">
+                    <NavLink to={`/profile/${sessionStorage.getItem('username')}`}>
                         <UserRound size={22} />
                         <span>Profile</span>
                     </NavLink>
