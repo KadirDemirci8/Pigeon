@@ -76,6 +76,15 @@ function PostCard({ post, currentUserId, onPostDeleted }) {
     const [comments, setComments] = useState([])
     const [commentContent, setCommentContent] = useState('')
     const [isSortOpen, setIsSortOpen] = useState(false)
+    const [sortOrder, setSortOrder] = useState('recent')
+
+    const sortedComments = [...comments].sort((a, b) => {
+    if (sortOrder === 'recent') {
+        return new Date(b.createdAt) - new Date(a.createdAt)
+    }
+
+    return new Date(a.createdAt) - new Date(b.createdAt)
+})
 
     const handleComment = async () => {
                 if (!commentContent.trim()) return
@@ -137,6 +146,27 @@ function PostCard({ post, currentUserId, onPostDeleted }) {
 
         fetchComments()
     }, [isCommentOpen, post.id])
+
+    const handleDeleteComment = async (commentId) => {
+    if (!window.confirm('Delete this comment?')) return
+
+    try {
+        await axios.delete(
+            `https://localhost:7151/api/posts/comments/${commentId}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`
+                }
+            }
+        )
+
+        setComments(prev =>
+            prev.filter(comment => comment.id !== commentId)
+        )
+    } catch (error) {
+        console.error('Error deleting comment:', error)
+    }
+}
 
     return (
         <article className="post-card">
@@ -227,21 +257,38 @@ function PostCard({ post, currentUserId, onPostDeleted }) {
                             className="comments-sort-trigger"
                             onClick={() => setIsSortOpen(!isSortOpen)}
                         >
-                            Most recent
-                            <ChevronDown size={16} />
+                            {sortOrder === 'recent' ? 'Most recent' : 'Oldest first'}
+                                <ChevronDown size={16} />
                         </button>
 
                         {isSortOpen && (
-                            <div className="comments-sort-menu">
-                                <button type="button">Most recent</button>
-                                <button type="button">Oldest first</button>
-                            </div>
-                        )}
+                    <div className="comments-sort-menu">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSortOrder('recent')
+                                setIsSortOpen(false)
+                            }}
+                        >
+                            Most recent
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSortOrder('oldest')
+                                setIsSortOpen(false)
+                            }}
+                        >
+                            Oldest first
+                        </button>
+                    </div>
+                )}
                     </div>
                 </div>
                 
                 <div className="comments-list">
-                    {comments.map((comment) => (
+                    {sortedComments.map((comment) => (
                     <div key={comment.id} className="comment-row">
                         <div className="comment-avatar">
                             {comment.displayName.charAt(0)}
@@ -251,6 +298,7 @@ function PostCard({ post, currentUserId, onPostDeleted }) {
                             <strong>{comment.displayName}</strong>
                             <span> @{comment.username}</span>
                             <p>{comment.content}</p>
+                            
                             <div className="comment-actions">
                                 <button type="button" aria-label="Like comment">
                                     <Heart size={15} />
@@ -264,6 +312,16 @@ function PostCard({ post, currentUserId, onPostDeleted }) {
                                 <button type="button" aria-label="More options">
                                     <MoreHorizontal size={18} />
                                 </button>
+                                {Number(comment.userId) === Number(currentUserId) && (
+                                    <button
+                                        type="button"
+                                        className="comment-delete"
+                                        onClick={() => handleDeleteComment(comment.id)}
+                                        aria-label="Delete comment"
+                                    >
+                                        <Trash2 size={15} />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

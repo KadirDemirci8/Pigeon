@@ -428,3 +428,53 @@
 .comment-reply span {
     font-size: 12px;
 }
+
+.comment-delete {
+    position: absolute;
+    right: 12px;
+    bottom: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 24px;
+    height: 24px;
+    padding: 0;
+
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #a88493;
+    cursor: pointer;
+}
+
+.comment-delete:hover {
+    background: #ffe1e8;
+    color: #e63965;
+}
+
+.comment-actions .comment-delete {
+    position: static;
+    margin-left: auto;
+    margin-top: 0;
+
+    width: 24px;
+    height: 24px;
+    padding: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+    background: transparent !important;
+    color: #a88493 !important;
+    box-shadow: none;
+}
+
+.comment-actions .comment-delete:hover {
+    background: #ffe1e8 !important;
+    color: #e63965 !important;
+}

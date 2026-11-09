@@ -233,5 +233,33 @@ namespace Pigeon.Api.Controllers
                 .ToListAsync();
             return Ok(comments);
         }
+
+        [HttpDelete("comments/{commentId}")]
+        public async Task<IActionResult> DeleteComment(int commentId)
+        {
+            var userId = GetCurrentUserId();
+
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            var comment = await _context.Comments.FindAsync(commentId);
+
+            if (comment == null)
+            {
+                return NotFound();
+            }
+
+            if (comment.UserId != userId.Value)
+            {
+                return Forbid();
+            }
+
+            _context.Comments.Remove(comment);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }
