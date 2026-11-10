@@ -128,3 +128,91 @@
     color: #85747d;
     font-size: 14px;
 }
+.edit-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(35, 20, 30, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.edit-modal {
+    width: 100%;
+    max-width: 460px;
+    background: white;
+    border-radius: 22px;
+    padding: 28px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.edit-modal h2 {
+    margin: 0 0 12px;
+    font-size: 22px;
+    color: #352631;
+}
+
+.edit-modal label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #775e6c;
+}
+
+.edit-modal input,
+.edit-modal textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid #f3d6de;
+    border-radius: 12px;
+    background: #fffafb;
+    color: #352631;
+    font: inherit;
+    resize: vertical;
+}
+
+.edit-modal input:focus,
+.edit-modal textarea:focus {
+    outline: none;
+    border-color: #f53679;
+}
+
+.edit-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.edit-modal-actions button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 24px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.edit-modal-actions button:first-child {
+    background: #f5edf0;
+    color: #775e6c;
+}
+
+.edit-modal-actions button:last-child {
+    background: linear-gradient(135deg, #ff9b45, #f53679);
+    color: white;
+}
+.edit-error {
+    color: #dc315d;
+    font-size: 13px;
+    margin: 0;
+}
+
+.edit-modal-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

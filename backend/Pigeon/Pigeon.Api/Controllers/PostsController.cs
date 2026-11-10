@@ -74,6 +74,7 @@ namespace Pigeon.Api.Controllers
                     createdAt = p.CreatedAt,
                     username = p.User.Username,
                     displayName = p.User.DisplayName,
+                    profileImageUrl = p.User.ProfileImageUrl,
                     likeCount = p.Likes.Count(),
                     isLiked = p.Likes.Any(l => l.UserId == userId)
                 })
@@ -99,6 +100,7 @@ namespace Pigeon.Api.Controllers
                     createdAt = p.CreatedAt,
                     username = p.User.Username,
                     displayName = p.User.DisplayName,
+                    profileImageUrl = p.User.ProfileImageUrl,
                     likeCount = p.Likes.Count(),
                     isLiked = p.Likes.Any(l => l.UserId == userId)
                 })

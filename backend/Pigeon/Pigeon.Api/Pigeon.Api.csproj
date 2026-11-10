@@ -17,4 +17,8 @@
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.22" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\profiles\" />
+  </ItemGroup>
+
 </Project>

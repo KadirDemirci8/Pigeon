@@ -3,7 +3,7 @@ import './PostComposer.css'
 import { Image, Smile, BarChart3 } from 'lucide-react'
 import axios from 'axios'
 
-function PostComposer({ onPostCreated }) {
+function PostComposer({ onPostCreated, currentUser }) {
     const [content, setContent] = useState('')
     const handlePost = async () => {
         if (!content.trim()) return
@@ -32,7 +32,22 @@ function PostComposer({ onPostCreated }) {
         <div className="post-composer">
 
             <div className="composer-top">
-                <div className="composer-avatar">P</div>
+                <div className="composer-avatar">
+                    {currentUser?.profileImageUrl ? (
+                        <img
+                            src={`https://localhost:7151${currentUser.profileImageUrl}`}
+                            alt="Your profile"
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                borderRadius: '50%'
+                            }}
+                        />
+                    ) : (
+                        currentUser?.displayName?.charAt(0) || 'P'
+                    )}
+                </div>
 
                 <textarea
                     placeholder="What's on your mind?"

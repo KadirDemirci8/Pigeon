@@ -19,3 +19,5 @@ secrets.json
 # Operating system
 .DS_Store
 Thumbs.db
+
+/backend/Pigeon/Pigeon.Api/wwwroot/uploads/

@@ -63,6 +63,8 @@ namespace Pigeon.Api
             }
 
             app.UseHttpsRedirection();
+            
+            app.UseStaticFiles();
 
             app.UseCors("ReactApp");
 

@@ -12,6 +12,11 @@ function Profile() {
     const navigate = useNavigate()
 
     const [profile, setProfile] = useState(null)
+    const [isEditing, setIsEditing] = useState(false)
+    const [editDisplayName, setEditDisplayName] = useState('')
+    const [editBio, setEditBio] = useState('')
+    const [isSaving, setIsSaving] = useState(false)
+    const [editError, setEditError] = useState('')
     const [loading, setLoading] = useState(true)
     const [notFound, setNotFound] = useState(false)
     const [posts, setPosts] = useState([])
@@ -51,9 +56,99 @@ function Profile() {
     fetchProfile()
 }, [username])
 
+const handleSaveProfile = async () => {
+    const displayName = editDisplayName.trim()
+    const bio = editBio.trim()
+
+    if (displayName.length < 2 || displayName.length > 50) {
+        setEditError('Display name must be between 2 and 50 characters.')
+        return
+    }
+
+    setIsSaving(true)
+    setEditError('')
+
+    try {
+        const token = sessionStorage.getItem('accessToken')
+
+        const response = await axios.put(
+            'https://localhost:7151/api/users/me',
+            {
+                displayName,
+                bio
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        )
+
+        setProfile(prev => ({
+            ...prev,
+            displayName: response.data.displayName,
+            bio: response.data.bio
+        }))
+
+        setIsEditing(false)
+
+    } catch (error) {
+        console.error('Failed to update profile:', error)
+        setEditError('Could not save profile. Please try again.')
+    } finally {
+        setIsSaving(false)
+    }
+}
+
 return (
     <MainLayout>
         <div className="profile-page">
+            {isEditing && (
+                <div className="edit-modal-overlay">
+                    <div className="edit-modal">
+                        <h2>Edit Profile</h2>
+
+                        <label htmlFor="edit-display-name">Display Name</label>
+                        <input
+                            id="edit-display-name"
+                            type="text"
+                            value={editDisplayName}
+                            maxLength={50}
+                            onChange={(e) => setEditDisplayName(e.target.value)}
+                        />
+
+                        <label htmlFor="edit-bio">Bio</label>
+                        <textarea
+                            id="edit-bio"
+                            value={editBio}
+                            maxLength={200}
+                            onChange={(e) => setEditBio(e.target.value)}
+                            placeholder="Tell us about yourself..."
+                            rows={4}
+                        />
+
+                        {editError && (
+                            <p className="edit-error">{editError}</p>
+                        )}
+                        <div className="edit-modal-actions">
+                            <button
+                                type="button"
+                                onClick={() => setIsEditing(false)}
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleSaveProfile}
+                                disabled={isSaving}
+                            >
+                                {isSaving ? 'Saving...' : 'Save Changes'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             <button
                 type="button"
                 className="profile-back-button"
@@ -78,10 +173,32 @@ return (
 
                 <div className="profile-info">
                     <div className="profile-avatar">
-                        {profile.displayName.charAt(0)}
+                    {profile.profileImageUrl ? (
+                        <img
+                        src={`https://localhost:7151${profile.profileImageUrl}`}
+                        alt={`${profile.displayName}'s profile`}
+                        style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: "50%"
+                        }}
+                        />
+                    ) : (
+                        profile.displayName?.charAt(0).toUpperCase()
+                    )}
                     </div>
                     {Number(sessionStorage.getItem('userId')) === profile.id && (
-                        <button type="button" className="profile-edit-button">
+                        <button
+                            type="button"
+                            className="profile-edit-button"
+                            onClick={() => {
+                                setEditDisplayName(profile.displayName)
+                                setEditBio(profile.bio || '')
+                                setEditError('')
+                                setIsEditing(true)
+                            }}
+                        >
                             Edit Profile
                         </button>
                     )}

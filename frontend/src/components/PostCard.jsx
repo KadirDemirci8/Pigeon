@@ -176,7 +176,20 @@ function PostCard({ post, currentUserId, onPostDeleted }) {
                     to={`/profile/${post.username}`}
                     className="post-avatar post-avatar-link"
                 >
-                    {post.displayName.charAt(0)}
+                    {post.profileImageUrl ? (
+                        <img
+                            src={`https://localhost:7151${post.profileImageUrl}`}
+                            alt={`${post.displayName}'s profile`}
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                borderRadius: '50%'
+                            }}
+                        />
+                    ) : (
+                        post.displayName.charAt(0)
+                    )}
                 </Link>
 
                 <div className="post-user-info">
