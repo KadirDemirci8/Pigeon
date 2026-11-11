@@ -255,7 +255,8 @@ namespace Pigeon.Api.Controllers
                     createdAt = c.CreatedAt,
                     userId = c.UserId,
                     username = c.User.Username,
-                    displayName = c.User.DisplayName
+                    displayName = c.User.DisplayName,
+                    profileImageUrl = c.User.ProfileImageUrl
                 })
                 .ToListAsync();
             return Ok(comments);

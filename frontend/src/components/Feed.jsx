@@ -2,7 +2,7 @@ import PostCard from './PostCard'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
-function Feed({ refreshKey, currentUserId, onPostDeleted }) {
+function Feed({ refreshKey, currentUserId, currentUser, onPostDeleted }) {
     const [posts, setPosts] = useState([])
 
     useEffect(() => {
@@ -35,6 +35,7 @@ function Feed({ refreshKey, currentUserId, onPostDeleted }) {
                     key={post.id}
                     post={post}
                     currentUserId={currentUserId}
+                    currentUser={currentUser}
                     onPostDeleted={onPostDeleted}
                 />
             ))}

@@ -5,7 +5,7 @@ import axios from 'axios'
 import { Link } from 'react-router-dom'
 
 
-function PostCard({ post, currentUserId, onPostDeleted }) {
+function PostCard({ post, currentUserId, currentUser, onPostDeleted }) {
 
     const isOwner = Number(post.userId) === Number(currentUserId)
 
@@ -313,7 +313,20 @@ function PostCard({ post, currentUserId, onPostDeleted }) {
                     {sortedComments.map((comment) => (
                     <div key={comment.id} className="comment-row">
                         <div className="comment-avatar">
-                            {comment.displayName.charAt(0)}
+                            {comment.profileImageUrl ? (
+                                <img
+                                    src={`https://localhost:7151${comment.profileImageUrl}`}
+                                    alt={`${comment.displayName}'s profile`}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        borderRadius: '50%'
+                                    }}
+                                />
+                            ) : (
+                                comment.displayName.charAt(0).toUpperCase()
+                            )}
                         </div>
 
                         <div className="comment-item">
@@ -351,9 +364,22 @@ function PostCard({ post, currentUserId, onPostDeleted }) {
                 </div>
 
                 <div className="comment-composer">
-    <div className="comment-composer-avatar">
-        {post.displayName.charAt(0)}
-    </div>
+                <div className="comment-composer-avatar">
+                {currentUser?.profileImageUrl ? (
+                    <img
+                        src={`https://localhost:7151${currentUser.profileImageUrl}`}
+                        alt="Your profile"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: '50%'
+                        }}
+                    />
+                ) : (
+                    currentUser?.displayName?.charAt(0).toUpperCase() || '?'
+                )}
+            </div>
 
     <textarea
                 placeholder="Write a comment..."

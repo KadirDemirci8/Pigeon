@@ -73,6 +73,7 @@ useEffect(() => {
        <Feed
             refreshKey={refreshKey}
             currentUserId={Number(sessionStorage.getItem('userId'))}
+            currentUser={currentUser}
             onPostDeleted={() => setRefreshKey(prev => prev + 1)}
         />
 

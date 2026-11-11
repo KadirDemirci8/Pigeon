@@ -15,10 +15,27 @@ namespace Pigeon.Api.Data
         public DbSet<Post> Posts { get; set; }
         public DbSet<Like> Likes { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<UserFollow> UserFollows { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<UserFollow>()
+                .HasOne(uf => uf.Follower)
+                .WithMany()
+                .HasForeignKey(uf => uf.FollowerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserFollow>()
+                .HasOne(uf => uf.Following)
+                .WithMany()
+                .HasForeignKey(uf => uf.FollowingId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserFollow>()
+                .HasIndex(uf => new { uf.FollowerId, uf.FollowingId })
+                .IsUnique();
 
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Username)

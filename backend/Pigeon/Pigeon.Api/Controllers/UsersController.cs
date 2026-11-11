@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
+using SixLabors.ImageSharp;
 
 namespace Pigeon.Api.Controllers
 {
@@ -146,6 +147,26 @@ namespace Pigeon.Api.Controllers
                 return BadRequest("Invalid image file.");
             }
 
+            // Görselin tamamını okuyarak doğrula
+            try
+            {
+                using var stream = file.OpenReadStream();
+                using var image = await Image.LoadAsync(stream);
+
+                if (image.Width > 4096 || image.Height > 4096)
+                {
+                    return BadRequest("Image dimensions must not exceed 4096 pixels.");
+                }
+            }
+            catch (SixLabors.ImageSharp.UnknownImageFormatException)
+            {
+                return BadRequest("Invalid image format.");
+            }
+            catch (SixLabors.ImageSharp.InvalidImageContentException)
+            {
+                return BadRequest("Corrupted image file.");
+            }
+
             var folder = Path.Combine(
                 _environment.WebRootPath,
                 "uploads",
@@ -162,9 +183,47 @@ namespace Pigeon.Api.Controllers
                 await file.CopyToAsync(stream);
             }
 
+            // Önceki fotoğrafın adresini sakla
+            var oldPhotoUrl = user.ProfileImageUrl;
+
+            // Yeni fotoğrafı veritabanına kaydet
             user.ProfileImageUrl = $"/uploads/profiles/{fileName}";
 
             await _context.SaveChangesAsync();
+
+            // Eski fotoğraf varsa güvenli şekilde sil
+            if (!string.IsNullOrEmpty(oldPhotoUrl))
+            {
+                var oldFileName = Path.GetFileName(oldPhotoUrl);
+
+                // Yalnızca bizim oluşturduğumuz GUID dosya adlarını kabul et
+                var oldExtension = Path.GetExtension(oldFileName);
+
+                if (Guid.TryParse(
+                        Path.GetFileNameWithoutExtension(oldFileName),
+                        out _) &&
+                    new[] { ".jpg", ".jpeg", ".png" }
+                        .Contains(oldExtension.ToLowerInvariant()))
+                {
+                    var oldFilePath = Path.Combine(folder, oldFileName);
+
+                    try
+                    {
+                        if (System.IO.File.Exists(oldFilePath))
+                        {
+                            System.IO.File.Delete(oldFilePath);
+                        }
+                    }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine($"Could not delete old profile photo: {ex.Message}");
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        Console.WriteLine($"Could not delete old profile photo: {ex.Message}");
+                    }
+                }
+            }
 
             return Ok(new
             {

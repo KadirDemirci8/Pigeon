@@ -148,6 +148,33 @@ namespace Pigeon.Api.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Pigeon.Api.Models.UserFollow", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FollowerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FollowingId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FollowingId");
+
+                    b.HasIndex("FollowerId", "FollowingId")
+                        .IsUnique();
+
+                    b.ToTable("UserFollows");
+                });
+
             modelBuilder.Entity("Pigeon.Api.Models.Comment", b =>
                 {
                     b.HasOne("Pigeon.Api.Models.Post", "Post")
@@ -195,6 +222,25 @@ namespace Pigeon.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Pigeon.Api.Models.UserFollow", b =>
+                {
+                    b.HasOne("Pigeon.Api.Models.User", "Follower")
+                        .WithMany()
+                        .HasForeignKey("FollowerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Pigeon.Api.Models.User", "Following")
+                        .WithMany()
+                        .HasForeignKey("FollowingId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Follower");
+
+                    b.Navigation("Following");
                 });
 
             modelBuilder.Entity("Pigeon.Api.Models.Post", b =>
