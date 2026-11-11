@@ -27,6 +27,40 @@ function Profile() {
     const [notFound, setNotFound] = useState(false)
     const [posts, setPosts] = useState([])
     const [isFollowLoading, setIsFollowLoading] = useState(false)
+    const [followModal, setFollowModal] = useState(null)
+    const [followUsers, setFollowUsers] = useState([])
+    const [followSearch, setFollowSearch] = useState('')
+    const [followUsersLoading, setFollowUsersLoading] = useState(false)
+    const [followUsersError, setFollowUsersError] = useState('')
+    const [followUserStatuses, setFollowUserStatuses] = useState({})
+    const [followListLoadingId, setFollowListLoadingId] = useState(null)
+    const [followActionError, setFollowActionError] = useState('')
+
+
+
+
+
+useEffect(() => {
+    if (!followModal) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    const handleEscape = (event) => {
+        if (event.key === 'Escape') {
+            setFollowModal(null)
+        }
+    }
+
+    document.addEventListener('keydown', handleEscape)
+
+    return () => {
+        document.body.style.overflow = previousOverflow
+        document.removeEventListener('keydown', handleEscape)
+    }
+}, [followModal])
+
+
 
     useEffect(() => {
     const fetchProfile = async () => {
@@ -127,6 +161,146 @@ const handlePhotoChange = (e) => {
 
     reader.readAsDataURL(file)
 }
+
+
+const fetchFollowUsers = async (type) => {
+    if (!profile) return
+
+    setFollowUsersLoading(true)
+    setFollowUsers([])
+    setFollowUsersError('')
+
+    try {
+        const token = sessionStorage.getItem('accessToken')
+
+        const response = await axios.get(
+            `https://localhost:7151/api/follows/${profile.id}/${type}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        )
+
+        setFollowUsers(response.data)
+
+        const statuses = {}
+
+        await Promise.all(
+            response.data.map(async (user) => {
+                const statusResponse = await axios.get(
+                    `https://localhost:7151/api/follows/${user.id}/status`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                )
+
+                statuses[user.id] = statusResponse.data.isFollowing
+            })
+        )
+
+        setFollowUserStatuses(statuses)
+
+    } catch (error) {
+        console.error('Failed to load follow users:', error)
+        setFollowUsersError('Could not load users. Please try again.')
+    } finally {
+        setFollowUsersLoading(false)
+    }
+}
+
+
+
+const openFollowModal = (type) => {
+    setFollowSearch('')
+    setFollowActionError('')
+    setFollowModal(type)
+    fetchFollowUsers(type)
+}
+
+
+
+
+const handleListFollow = async (userId) => {
+    if (followListLoadingId !== null) return
+
+    setFollowListLoadingId(userId)
+    setFollowActionError('')
+
+    const token = sessionStorage.getItem('accessToken')
+
+    const currentlyFollowing = followUserStatuses[userId]
+
+    try {
+        if (currentlyFollowing) {
+            await axios.delete(
+                `https://localhost:7151/api/follows/${userId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+        } else {
+            await axios.post(
+                `https://localhost:7151/api/follows/${userId}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+        }
+
+        setFollowUserStatuses(prev => ({
+            ...prev,
+            [userId]: !currentlyFollowing
+        }))
+
+
+
+
+if (
+    followModal === 'following' &&
+    currentlyFollowing &&
+    profile?.id === Number(sessionStorage.getItem('userId'))
+) {
+    setFollowUsers(prev =>
+        prev.filter(user => user.id !== userId)
+    )
+}
+
+
+if (profile?.id === Number(sessionStorage.getItem('userId'))) {
+    setFollowingCount(prev =>
+        Math.max(0, prev + (currentlyFollowing ? -1 : 1))
+    )
+}
+
+
+
+        // Açık olan profilin takipçi sayısını da güncelle
+        if (profile?.id === userId) {
+            setFollowersCount(prev =>
+                prev + (currentlyFollowing ? -1 : 1)
+            )
+            setIsFollowing(!currentlyFollowing)
+        }
+
+
+        } catch (error) {
+            console.error('Failed to update follow:', error)
+            setFollowActionError('Could not update follow. Please try again.')
+        } finally {
+            setFollowListLoadingId(null)
+        }
+
+
+}
+
 
 const handleFollow = async () => {
     if (!profile || isFollowLoading) return
@@ -246,6 +420,178 @@ const handleSaveProfile = async () => {
 return (
     <MainLayout>
         <div className="profile-page">
+
+                {followModal && (
+
+                        <div
+                            className="follow-modal-overlay"
+                            onClick={(e) => {
+                                if (e.target === e.currentTarget) {
+                                    setFollowModal(null)
+                                }
+                            }}
+                        >
+
+                        <div
+                            className="follow-modal"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label="Follow lists"
+                        >
+
+<div className="follow-modal-header">
+    <h2>Follow Lists</h2>
+
+    <button
+        type="button"
+        onClick={() => setFollowModal(null)}
+        aria-label="Close"
+    >
+        ×
+    </button>
+</div>
+
+            <div className="follow-modal-tabs">
+                <button
+                    type="button"
+                    className={followModal === 'followers' ? 'active' : ''}
+                    onClick={() => openFollowModal('followers')}
+                >
+                    Followers ({followersCount})
+                </button>
+
+                <button
+                    type="button"
+                    className={followModal === 'following' ? 'active' : ''}
+                    onClick={() => openFollowModal('following')}
+                >
+                    Following ({followingCount})
+                </button>
+            </div>
+
+
+
+                            <div className="follow-modal-content">
+
+                            {followActionError && (
+                                <p className="follow-action-error" role="alert">
+                                    {followActionError}
+                                </p>
+                            )}
+
+
+                            <div className="follow-modal-search">
+                                <input
+                                    type="text"
+                                    placeholder="Search users..."
+                                    value={followSearch}
+                                    onChange={(e) => setFollowSearch(e.target.value)}
+                                    aria-label="Search follow list"
+                                />
+                            </div>
+
+
+                                {followUsersLoading ? (
+
+
+                                <p>Loading users...</p>
+
+                                ) : followUsersError ? (
+                                    <div className="follow-modal-error" role="alert">
+                                        <p>{followUsersError}</p>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => fetchFollowUsers(followModal)}
+                                        >
+                                            Try Again
+                                        </button>
+                                    </div>
+                                ) : followUsers.length === 0 ? (
+
+
+                                    <p>No users to show yet.</p>
+                                ) : followUsers.filter(user =>
+                                    user.displayName?.toLowerCase().includes(followSearch.toLowerCase()) ||
+                                    user.username?.toLowerCase().includes(followSearch.toLowerCase())
+                                ).length === 0 ? (
+                                    <p>No users found.</p>
+                                ) : (
+
+
+                                followUsers
+                                    .filter(user =>
+                                        user.displayName?.toLowerCase().includes(followSearch.toLowerCase()) ||
+                                        user.username?.toLowerCase().includes(followSearch.toLowerCase())
+                                    )
+                                    .map(user => (
+
+
+                                    <div
+                                        className="follow-user-row"
+                                        key={user.id}
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={() => {
+                                            setFollowModal(null)
+                                            navigate(`/profile/${user.username}`)
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault()
+                                                setFollowModal(null)
+                                                navigate(`/profile/${user.username}`)
+                                            }
+                                        }}
+                                    >
+
+                                            <div className="follow-user-avatar">
+                                                {user.profileImageUrl ? (
+                                                    <img
+                                                        src={`https://localhost:7151${user.profileImageUrl}`}
+                                                        alt={user.displayName}
+                                                    />
+                                                ) : (
+                                                    user.displayName?.charAt(0).toUpperCase()
+                                                )}
+                                            </div>
+
+                                            <div className="follow-user-info">
+                                                <strong>{user.displayName}</strong>
+                                                <span>@{user.username}</span>
+                                            </div>
+
+                                            {Number(sessionStorage.getItem('userId')) !== user.id && (
+
+                                            <button
+                                                type="button"
+                                                className={`follow-list-button ${
+                                                    followUserStatuses[user.id] ? 'is-following' : ''
+                                                }`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleListFollow(user.id)
+                                                }}
+                                                disabled={followListLoadingId !== null || followUsersLoading}
+                                            >
+                                                {followListLoadingId === user.id
+                                                    ? 'Loading...'
+                                                    : followUserStatuses[user.id]
+                                                        ? 'Following'
+                                                        : 'Follow'}
+                                            </button>
+
+                                            )}
+
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                        </div>
+                    </div>
+                )}
+
             {isEditing && (
                 <div className="edit-modal-overlay">
                     <div className="edit-modal">
@@ -406,15 +752,23 @@ return (
                     <p className="profile-bio">
                         {profile.bio || 'No bio yet'}
                     </p>
-                    <div className="profile-follow-stats">
-                        <span>
-                            <strong>{followingCount}</strong> Following
-                        </span>
 
-                        <span>
+                    <div className="profile-follow-stats">
+                        <button
+                            type="button"
+                            onClick={() => openFollowModal('following')}
+                        >
+                            <strong>{followingCount}</strong> Following
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => openFollowModal('followers')}
+                        >
                             <strong>{followersCount}</strong> Followers
-                        </span>
+                        </button>
                     </div>
+
 
                     <p className="profile-joined">
                         Joined {new Date(profile.createdAt).toLocaleDateString('en-US', {
@@ -438,7 +792,7 @@ return (
                             No posts yet.
                         </p>
                     )}
-                    
+
                         {posts.map((post) => (
                             <PostCard
                                 key={post.id}

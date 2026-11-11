@@ -8,6 +8,7 @@ import Register from './pages/Register'
 import Home from './pages/Home'
 import Profile from './pages/Profile'
 import ProtectedRoute from './components/ProtectedRoute'
+import Explore from './pages/Explore'
 
 function App() {
   const [message, setMessage] = useState('Loading...')
@@ -43,6 +44,16 @@ function App() {
             </ProtectedRoute>
         }
     />
+
+  <Route
+      path="/explore"
+      element={
+          <ProtectedRoute>
+              <Explore />
+          </ProtectedRoute>
+      }
+  />
+
 
     <Route
         path="/profile/:username"

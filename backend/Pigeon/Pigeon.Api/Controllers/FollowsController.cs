@@ -109,5 +109,53 @@ namespace Pigeon.Api.Controllers
                 isFollowing
             });
         }
+
+        [HttpGet("{userId:int}/followers")]
+        public async Task<IActionResult> GetFollowers(int userId)
+        {
+            var userExists = await _context.Users
+                .AnyAsync(u => u.Id == userId);
+
+            if (!userExists)
+                return NotFound("User not found.");
+
+            var followers = await _context.UserFollows
+                .Where(f => f.FollowingId == userId)
+                .Select(f => new
+                {
+                    f.Follower.Id,
+                    f.Follower.Username,
+                    f.Follower.DisplayName,
+                    f.Follower.ProfileImageUrl
+                })
+                .ToListAsync();
+
+            return Ok(followers);
+        }
+
+        [HttpGet("{userId:int}/following")]
+        public async Task<IActionResult> GetFollowing(int userId)
+        {
+            var userExists = await _context.Users
+                .AnyAsync(u => u.Id == userId);
+
+            if (!userExists)
+                return NotFound("User not found.");
+
+            var following = await _context.UserFollows
+                .Where(f => f.FollowerId == userId)
+                .Select(f => new
+                {
+                    f.Following.Id,
+                    f.Following.Username,
+                    f.Following.DisplayName,
+                    f.Following.ProfileImageUrl
+                })
+                .ToListAsync();
+
+            return Ok(following);
+        }
+
+
     }
 }

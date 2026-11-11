@@ -25,6 +25,42 @@ namespace Pigeon.Api.Controllers
             _environment = environment;
         }
 
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchUsers(
+            [FromQuery] string? q,
+            [FromQuery] int limit = 4)
+        {
+            limit = Math.Clamp(limit, 1, 20);
+
+            var query = _context.Users.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var search = q.Trim();
+
+                query = query.Where(u =>
+                    u.Username.Contains(search) ||
+                    u.DisplayName.Contains(search));
+            }
+
+            var users = await query
+                .OrderBy(u => u.Id)
+                .Take(limit)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Username,
+                    u.DisplayName,
+                    u.Bio,
+                    u.ProfileImageUrl
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
+
+
         [HttpGet("{username}")]
         public async Task<ActionResult<UserProfileDto>> GetProfile(string username)
         {
