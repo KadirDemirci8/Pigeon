@@ -47,6 +47,28 @@ export function AuthProvider({ children }) {
     validateToken()
 }, [token])
 
+
+useEffect(() => {
+    const interceptorId = axios.interceptors.response.use(
+        response => response,
+        error => {
+            if (
+                error.response?.status === 401 &&
+                sessionStorage.getItem('accessToken')
+            ) {
+                logout()
+            }
+
+            return Promise.reject(error)
+        }
+    )
+
+    return () => {
+        axios.interceptors.response.eject(interceptorId)
+    }
+}, [])
+
+
     return (
         <AuthContext.Provider value={{ token, setToken, logout, isCheckingAuth }}>
             {children}

@@ -185,3 +185,56 @@
     outline-offset: -2px;
     border-radius: 8px;
 }
+
+/* EXPLORE FOLLOW BUTTON */
+
+.explore-follow-button {
+    flex-shrink: 0;
+    padding: 9px 17px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ff963f, #f62d78);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.explore-follow-button.is-following {
+    background: white;
+    border: 1px solid #f4cbd5;
+    color: #6b4859;
+}
+
+.explore-follow-button:disabled {
+    opacity: 1;
+    cursor: default;
+}
+
+/* EXPLORE POSTS */
+
+.explore-posts {
+    margin-top: 24px;
+    border: 1px solid #f3dfe5;
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.explore-posts .feed {
+    padding: 12px;
+}
+
+.explore-posts > p {
+    padding: 20px;
+    color: #8b7784;
+    font-size: 14px;
+}
+.explore-people .explore-empty-message,
+.explore-posts .explore-empty-message {
+    margin: 0;
+    padding: 20px;
+    color: #8b7784;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+}

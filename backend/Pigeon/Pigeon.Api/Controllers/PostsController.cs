@@ -58,13 +58,24 @@ namespace Pigeon.Api.Controllers
             });
         }
 
+
         [HttpGet]
-        public async Task<IActionResult> GetPosts()
+        public async Task<IActionResult> GetPosts([FromQuery] string? q)
         {
             var userId = GetCurrentUserId();
-            var posts = await _context.Posts
+
+            var query = _context.Posts
                 .AsNoTracking()
-                .Include(p => p.User)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var search = q.Trim();
+
+                query = query.Where(p => p.Content.Contains(search));
+            }
+
+            var posts = await query
                 .OrderByDescending(p => p.CreatedAt)
                 .Select(p => new
                 {
@@ -82,6 +93,7 @@ namespace Pigeon.Api.Controllers
 
             return Ok(posts);
         }
+
         [AllowAnonymous]
         [HttpGet("user/{username}")]
         public async Task<IActionResult> GetUserPosts(string username)
