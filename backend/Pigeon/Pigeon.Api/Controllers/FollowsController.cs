@@ -50,10 +50,25 @@ namespace Pigeon.Api.Controllers
                 FollowingId = userId
             };
 
+
             _context.UserFollows.Add(follow);
+
+            var notification = new Notification
+            {
+                RecipientId = userId,
+                ActorId = currentUserId,
+                Type = "Follow",
+                PostId = null,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Notifications.Add(notification);
+
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "User followed successfully." });
+
         }
 
         [HttpDelete("{userId:int}")]

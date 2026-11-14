@@ -178,7 +178,36 @@ namespace Pigeon.Api.Controllers
                 PostId = id
             };
 
+
             _context.Likes.Add(like);
+
+            // Kullanıcı kendi gönderisini beğenirse bildirim oluşturma
+            if (post.UserId != userId.Value)
+            {
+                // Aynı kullanıcı aynı gönderi için daha önce
+                // Like bildirimi oluşturmuş mu?
+                var notificationExists = await _context.Notifications
+                    .AnyAsync(n =>
+                        n.ActorId == userId.Value &&
+                        n.RecipientId == post.UserId &&
+                        n.PostId == id &&
+                        n.Type == "Like");
+
+                if (!notificationExists)
+                {
+                    var notification = new Notification
+                    {
+                        RecipientId = post.UserId,
+                        ActorId = userId.Value,
+                        Type = "Like",
+                        PostId = id,
+                        IsRead = false,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    _context.Notifications.Add(notification);
+                }
+            }
 
             await _context.SaveChangesAsync();
 
@@ -186,6 +215,7 @@ namespace Pigeon.Api.Controllers
             {
                 message = "Post liked successfully!"
             });
+
         }
 
         [HttpDelete("{id}/like")]
@@ -243,9 +273,26 @@ namespace Pigeon.Api.Controllers
                 PostId = id
             };
 
+
             _context.Comments.Add(comment);
 
+            if (post.UserId != userId.Value)
+            {
+                var notification = new Notification
+                {
+                    RecipientId = post.UserId,
+                    ActorId = userId.Value,
+                    Type = "Comment",
+                    PostId = id,
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.Notifications.Add(notification);
+            }
+
             await _context.SaveChangesAsync();
+
 
             return Ok(new
             {
