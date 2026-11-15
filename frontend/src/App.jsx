@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import './App.css'
 import { Routes, Route } from 'react-router-dom'
+import Bookmarks from './pages/Bookmarks'
 
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -67,6 +68,17 @@ function App() {
                     </ProtectedRoute>
                 }
             />
+
+            
+            <Route
+                path="/bookmarks"
+                element={
+                    <ProtectedRoute>
+                        <Bookmarks />
+                    </ProtectedRoute>
+                }
+            />
+
 
             <Route
                 path="/profile/:username"

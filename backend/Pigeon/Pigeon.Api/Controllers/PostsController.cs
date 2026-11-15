@@ -86,8 +86,14 @@ namespace Pigeon.Api.Controllers
                     username = p.User.Username,
                     displayName = p.User.DisplayName,
                     profileImageUrl = p.User.ProfileImageUrl,
+
                     likeCount = p.Likes.Count(),
-                    isLiked = p.Likes.Any(l => l.UserId == userId)
+                    isLiked = p.Likes.Any(l => l.UserId == userId),
+                    isBookmarked = userId != null &&
+                        _context.Bookmarks.Any(b =>
+                         b.PostId == p.Id &&
+                         b.UserId == userId.Value)
+
                 })
                 .ToListAsync();
 
@@ -130,6 +136,7 @@ namespace Pigeon.Api.Controllers
             {
                 return NotFound();
             }
+
             var userId = GetCurrentUserId();
 
             if (userId == null)
@@ -140,14 +147,23 @@ namespace Pigeon.Api.Controllers
             if (post.UserId != userId.Value)
             {
                 return Forbid();
-
             }
+
+           
+            var bookmarks = await _context.Bookmarks
+                .Where(b => b.PostId == id)
+                .ToListAsync();
+
+            _context.Bookmarks.RemoveRange(bookmarks);
+
+            // Ardından gönderiyi sil
             _context.Posts.Remove(post);
 
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
+
 
         [HttpPost("{id}/like")]
         public async Task<IActionResult> LikePost(int id)

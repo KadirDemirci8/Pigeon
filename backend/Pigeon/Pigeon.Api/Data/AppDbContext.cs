@@ -17,6 +17,7 @@ namespace Pigeon.Api.Data
         public DbSet<Comment> Comments { get; set; }
         public DbSet<UserFollow> UserFollows { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Bookmark> Bookmarks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -80,6 +81,24 @@ namespace Pigeon.Api.Data
 
             modelBuilder.Entity<Notification>()
                 .HasIndex(n => new { n.RecipientId, n.IsRead, n.CreatedAt });
+
+
+            modelBuilder.Entity<Bookmark>()
+                .HasOne(b => b.User)
+                .WithMany()
+                .HasForeignKey(b => b.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Bookmark>()
+                .HasOne(b => b.Post)
+                .WithMany()
+                .HasForeignKey(b => b.PostId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Bookmark>()
+                .HasIndex(b => new { b.UserId, b.PostId })
+                .IsUnique();
+
 
         }
     }

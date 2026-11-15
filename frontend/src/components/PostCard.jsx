@@ -5,7 +5,7 @@ import axios from 'axios'
 import { Link } from 'react-router-dom'
 
 
-function PostCard({ post, currentUserId, currentUser, onPostDeleted }) {
+function PostCard({ post, currentUserId, currentUser, onPostDeleted, onBookmarkRemoved }) {
 
     const isOwner = Number(post.userId) === Number(currentUserId)
 
@@ -67,11 +67,60 @@ function PostCard({ post, currentUserId, currentUser, onPostDeleted }) {
     } catch (error) {
         console.error('Failed to update like:', error)
     }
+
+    
+
 }
+
+
+const handleBookmark = async () => {
+    if (bookmarkLoading) return
+
+    setBookmarkLoading(true)
+
+    try {
+        const token = sessionStorage.getItem('accessToken')
+
+        if (isBookmarked) {
+            await axios.delete(
+                `https://localhost:7151/api/bookmarks/${post.id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setIsBookmarked(false)
+            onBookmarkRemoved?.(post.id)
+        } else {
+            await axios.post(
+                `https://localhost:7151/api/bookmarks/${post.id}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setIsBookmarked(true)
+        }
+    } catch (error) {
+        console.error('Failed to update bookmark:', error)
+        alert('Could not update bookmark. Please try again.')
+    } finally {
+        setBookmarkLoading(false)
+    }
+}
+
 
     const [isLiked, setIsLiked] = useState(post.isLiked)
     const [likeCount, setLikeCount] = useState(post.likeCount)
-    const [isBookmarked, setIsBookmarked] = useState(false)
+    const [isBookmarked, setIsBookmarked] = useState(
+    post.isBookmarked ?? false
+    )
+    const [bookmarkLoading, setBookmarkLoading] = useState(false)
     const [isReposted, setIsReposted] = useState(false)
     const [isCommentOpen, setIsCommentOpen] = useState(false)
     const [comments, setComments] = useState([])
@@ -246,10 +295,12 @@ function PostCard({ post, currentUserId, currentUser, onPostDeleted }) {
                     <Repeat2 size={19} />
                 </button>
 
+                
                 <button
                     type="button"
                     className={`action-bookmark ${isBookmarked ? 'bookmarked' : ''}`}
-                    onClick={() => setIsBookmarked(!isBookmarked)}
+                    onClick={handleBookmark}
+                    disabled={bookmarkLoading}
                     aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
                     aria-pressed={isBookmarked}
                 >
@@ -258,6 +309,7 @@ function PostCard({ post, currentUserId, currentUser, onPostDeleted }) {
                         fill={isBookmarked ? 'currentColor' : 'none'}
                     />
                 </button>
+
             </div>
                             {isCommentOpen && (
             <div className="comment-section">
