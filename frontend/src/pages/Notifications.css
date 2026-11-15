@@ -152,3 +152,75 @@
     outline: 2px solid #f62d78;
     outline-offset: 2px;
 }
+
+
+.notifications-tabs {
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.notifications-tabs .notifications-mark-all {
+    margin-left: auto;
+    padding: 10px 4px;
+    border: none;
+    background: transparent;
+    color: #f62d78;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.notifications-tabs .notifications-mark-all:hover {
+    text-decoration: underline;
+}
+
+/* FOLLOW BACK BUTTON */
+
+.notification-follow-action {
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.notification-follow-button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ff963f, #f62d78);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.notification-follow-button.following {
+    background: white;
+    border: 1px solid #f4cbd5;
+    color: #6b4859;
+}
+
+.notification-follow-button:disabled {
+    cursor: default;
+}
+
+.notification-follow-loading {
+    color: #9b7f8c;
+    font-size: 12px;
+}
+
+@media (max-width: 600px) {
+    .notification-follow-button {
+        padding: 9px 12px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 600px) {
+    .notifications-tabs {
+        margin-bottom: 16px;
+        row-gap: 8px;
+    }
+
+    .notifications-tabs .notifications-mark-all {
+        margin-left: auto;
+        padding: 4px;
+    }
+}
