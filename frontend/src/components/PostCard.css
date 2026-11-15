@@ -495,3 +495,7 @@
 .post-avatar-link:hover {
     opacity: 0.85;
 }
+
+.comment-count {
+    margin-left: 6px;
+}

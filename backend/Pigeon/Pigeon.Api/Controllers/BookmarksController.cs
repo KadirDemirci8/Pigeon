@@ -114,6 +114,7 @@ namespace Pigeon.Api.Controllers
                     displayName = b.Post.User.DisplayName,
                     profileImageUrl = b.Post.User.ProfileImageUrl,
                     likeCount = b.Post.Likes.Count(),
+                    commentCount = _context.Comments.Count(c => c.PostId == b.PostId),
                     isLiked = b.Post.Likes.Any(l => l.UserId == userId.Value),
                     isBookmarked = true
                 })

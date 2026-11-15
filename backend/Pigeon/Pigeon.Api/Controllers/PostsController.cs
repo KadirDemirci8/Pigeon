@@ -88,6 +88,7 @@ namespace Pigeon.Api.Controllers
                     profileImageUrl = p.User.ProfileImageUrl,
 
                     likeCount = p.Likes.Count(),
+                    commentCount = _context.Comments.Count(c => c.PostId == p.Id),
                     isLiked = p.Likes.Any(l => l.UserId == userId),
                     isBookmarked = userId != null &&
                         _context.Bookmarks.Any(b =>
@@ -120,6 +121,7 @@ namespace Pigeon.Api.Controllers
                     displayName = p.User.DisplayName,
                     profileImageUrl = p.User.ProfileImageUrl,
                     likeCount = p.Likes.Count(),
+                    commentCount = _context.Comments.Count(c => c.PostId == p.Id),
                     isLiked = p.Likes.Any(l => l.UserId == userId)
                 })
                 .ToListAsync();

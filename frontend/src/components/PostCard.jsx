@@ -117,6 +117,7 @@ const handleBookmark = async () => {
 
     const [isLiked, setIsLiked] = useState(post.isLiked)
     const [likeCount, setLikeCount] = useState(post.likeCount)
+    const [commentCount, setCommentCount] = useState(post.commentCount ?? 0)
     const [isBookmarked, setIsBookmarked] = useState(
     post.isBookmarked ?? false
     )
@@ -164,6 +165,7 @@ const handleBookmark = async () => {
                 )
 
                 setComments(response.data)
+                setCommentCount(response.data.length)
                     
                     setCommentContent('')
 
@@ -189,6 +191,7 @@ const handleBookmark = async () => {
                 )
 
                 setComments(response.data)
+                setCommentCount(response.data.length)
             } catch (error) {
                 console.error('Failed to load comments:', error)
             }
@@ -210,9 +213,17 @@ const handleBookmark = async () => {
             }
         )
 
-        setComments(prev =>
-            prev.filter(comment => comment.id !== commentId)
-        )
+        
+        setComments(prev => {
+            const updatedComments = prev.filter(
+                comment => comment.id !== commentId
+            )
+
+            setCommentCount(updatedComments.length)
+
+            return updatedComments
+        })
+
     } catch (error) {
         console.error('Error deleting comment:', error)
     }
@@ -275,6 +286,7 @@ const handleBookmark = async () => {
                     {likeCount > 0 && <span className="like-count">{likeCount}</span>}
                 </button>
 
+                
                 <button
                     type="button"
                     className={`action-comment ${isCommentOpen ? 'comment-open' : ''}`}
@@ -283,7 +295,11 @@ const handleBookmark = async () => {
                     aria-expanded={isCommentOpen}
                 >
                     <MessageCircle size={19} />
+                    {commentCount > 0 && (
+                        <span className="comment-count">{commentCount}</span>
+                    )}
                 </button>
+
 
                 <button
                     type="button"
