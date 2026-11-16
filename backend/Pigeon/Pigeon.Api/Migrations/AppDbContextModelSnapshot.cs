@@ -64,6 +64,9 @@ namespace Pigeon.Api.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ParentCommentId")
+                        .HasColumnType("int");
+
                     b.Property<int>("PostId")
                         .HasColumnType("int");
 
@@ -72,11 +75,40 @@ namespace Pigeon.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ParentCommentId");
+
                     b.HasIndex("PostId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Comments");
+                });
+
+            modelBuilder.Entity("Pigeon.Api.Models.CommentLike", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CommentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommentId");
+
+                    b.HasIndex("UserId", "CommentId")
+                        .IsUnique();
+
+                    b.ToTable("CommentLikes");
                 });
 
             modelBuilder.Entity("Pigeon.Api.Models.Like", b =>
@@ -288,6 +320,11 @@ namespace Pigeon.Api.Migrations
 
             modelBuilder.Entity("Pigeon.Api.Models.Comment", b =>
                 {
+                    b.HasOne("Pigeon.Api.Models.Comment", "ParentComment")
+                        .WithMany()
+                        .HasForeignKey("ParentCommentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("Pigeon.Api.Models.Post", "Post")
                         .WithMany("Comments")
                         .HasForeignKey("PostId")
@@ -300,7 +337,28 @@ namespace Pigeon.Api.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.Navigation("ParentComment");
+
                     b.Navigation("Post");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Pigeon.Api.Models.CommentLike", b =>
+                {
+                    b.HasOne("Pigeon.Api.Models.Comment", "Comment")
+                        .WithMany("Likes")
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Pigeon.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Comment");
 
                     b.Navigation("User");
                 });
@@ -397,6 +455,11 @@ namespace Pigeon.Api.Migrations
                     b.Navigation("Follower");
 
                     b.Navigation("Following");
+                });
+
+            modelBuilder.Entity("Pigeon.Api.Models.Comment", b =>
+                {
+                    b.Navigation("Likes");
                 });
 
             modelBuilder.Entity("Pigeon.Api.Models.Post", b =>

@@ -86,6 +86,7 @@ namespace Pigeon.Api.Controllers
                     username = p.User.Username,
                     displayName = p.User.DisplayName,
                     profileImageUrl = p.User.ProfileImageUrl,
+                    
 
                     likeCount = p.Likes.Count(),
                     repostCount = p.Reposts.Count(),
@@ -245,44 +246,52 @@ namespace Pigeon.Api.Controllers
             var post = await _context.Posts.FindAsync(id);
 
             if (post == null)
-            {
                 return NotFound();
-            }
 
             var userId = GetCurrentUserId();
 
             if (userId == null)
-            {
                 return Unauthorized();
-            }
 
             if (post.UserId != userId.Value)
-            {
                 return Forbid();
-            }
 
-           
+            // 1. Bookmark kayıtlarını temizle
             var bookmarks = await _context.Bookmarks
                 .Where(b => b.PostId == id)
                 .ToListAsync();
 
             _context.Bookmarks.RemoveRange(bookmarks);
 
-
+            // 2. Repost kayıtlarını temizle
             var reposts = await _context.Reposts
                 .Where(r => r.PostId == id)
                 .ToListAsync();
 
             _context.Reposts.RemoveRange(reposts);
 
+            // 3. Gönderinin yorumlarına ait beğenileri temizle
+            var commentLikes = await _context.CommentLikes
+                .Where(cl => cl.Comment.PostId == id)
+                .ToListAsync();
 
-            // Ardından gönderiyi sil
+            _context.CommentLikes.RemoveRange(commentLikes);
+
+            // 4. Gönderiye ait yorumları temizle
+            var comments = await _context.Comments
+                .Where(c => c.PostId == id)
+                .ToListAsync();
+
+            _context.Comments.RemoveRange(comments);
+
+            // 5. Son olarak gönderiyi sil
             _context.Posts.Remove(post);
 
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
+
 
 
         [HttpPost("{id}/like")]
@@ -378,9 +387,10 @@ namespace Pigeon.Api.Controllers
             return NoContent();
         }
 
+
         [HttpPost("{id}/comments")]
         public async Task<IActionResult> CreateComment(
-        int id, [FromBody] CreateCommentDto request)
+            int id, [FromBody] CreateCommentDto request)
         {
             var post = await _context.Posts.FindAsync(id);
 
@@ -388,6 +398,7 @@ namespace Pigeon.Api.Controllers
             {
                 return NotFound();
             }
+
             var userId = GetCurrentUserId();
 
             if (userId == null)
@@ -402,16 +413,43 @@ namespace Pigeon.Api.Controllers
                 return BadRequest("Comment cannot be empty.");
             }
 
+            // Reply ise cevap verilen yorumu kontrol et
+            if (request.ParentCommentId.HasValue)
+            {
+                var parentComment = await _context.Comments
+                    .FirstOrDefaultAsync(c =>
+                        c.Id == request.ParentCommentId.Value);
+
+                if (parentComment == null)
+                {
+                    return NotFound("Parent comment not found.");
+                }
+
+                if (parentComment.PostId != id)
+                {
+                    return BadRequest(
+                        "Parent comment does not belong to this post.");
+                }
+
+                // V1: Yalnızca ana yorumlara cevap verilebilir
+                if (parentComment.ParentCommentId != null)
+                {
+                    return BadRequest(
+                        "You cannot reply to a reply.");
+                }
+            }
+
             var comment = new Comment
             {
                 Content = content!,
                 UserId = userId.Value,
-                PostId = id
+                PostId = id,
+                ParentCommentId = request.ParentCommentId
             };
-
 
             _context.Comments.Add(comment);
 
+            // Mevcut gönderi bildirimi davranışını koruyoruz
             if (post.UserId != userId.Value)
             {
                 var notification = new Notification
@@ -429,16 +467,19 @@ namespace Pigeon.Api.Controllers
 
             await _context.SaveChangesAsync();
 
-
             return Ok(new
             {
                 message = "Comment created successfully!",
                 commentId = comment.Id
             });
         }
+
+
         [HttpGet("{id}/comments")]
         public async Task<IActionResult> GetComments(int id)
         {
+            var userId = GetCurrentUserId();
+
             var comments = await _context.Comments
                 .AsNoTracking()
                 .Where(c => c.PostId == id)
@@ -451,11 +492,20 @@ namespace Pigeon.Api.Controllers
                     userId = c.UserId,
                     username = c.User.Username,
                     displayName = c.User.DisplayName,
-                    profileImageUrl = c.User.ProfileImageUrl
+                    profileImageUrl = c.User.ProfileImageUrl,
+                    parentCommentId = c.ParentCommentId,
+
+                    likeCount = c.Likes.Count(),
+
+                    isLiked = userId != null &&
+                        c.Likes.Any(cl => cl.UserId == userId.Value)
                 })
                 .ToListAsync();
+
             return Ok(comments);
         }
+
+
 
         [HttpDelete("comments/{commentId}")]
         public async Task<IActionResult> DeleteComment(int commentId)
@@ -479,10 +529,20 @@ namespace Pigeon.Api.Controllers
                 return Forbid();
             }
 
+            // Yoruma ait beğenileri temizle
+            var commentLikes = await _context.CommentLikes
+                .Where(cl => cl.CommentId == commentId)
+                .ToListAsync();
+
+            _context.CommentLikes.RemoveRange(commentLikes);
+
+            // Yorumu sil
             _context.Comments.Remove(comment);
+
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
+
     }
 }

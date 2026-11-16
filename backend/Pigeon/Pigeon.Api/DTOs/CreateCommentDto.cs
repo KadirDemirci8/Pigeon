@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using System.ComponentModel.DataAnnotations;
 
 namespace Pigeon.Api.DTOs
 {
@@ -7,5 +8,7 @@ namespace Pigeon.Api.DTOs
         [Required]
         [StringLength(500, MinimumLength = 1)]
         public string Content { get; set; } = string.Empty;
+
+        public int? ParentCommentId { get; set; }
     }
 }

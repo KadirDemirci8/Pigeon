@@ -13,5 +13,11 @@
 
         public int PostId { get; set; }
         public Post Post { get; set; } = null!;
+        public ICollection<CommentLike> Likes { get; set; } = new List<CommentLike>();
+
+        public int? ParentCommentId { get; set; }
+
+        public Comment? ParentComment { get; set; }
+
     }
 }

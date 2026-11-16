@@ -178,23 +178,43 @@ const handleRepost = async () => {
     const [isCommentOpen, setIsCommentOpen] = useState(false)
     const [comments, setComments] = useState([])
     const [commentContent, setCommentContent] = useState('')
+    const [replyToComment, setReplyToComment] = useState(null)
+    const [replyContent, setReplyContent] = useState('')
     const [isSortOpen, setIsSortOpen] = useState(false)
     const [sortOrder, setSortOrder] = useState('recent')
 
-    const sortedComments = [...comments].sort((a, b) => {
-    if (sortOrder === 'recent') {
-        return new Date(b.createdAt) - new Date(a.createdAt)
-    }
 
+const mainComments = comments.filter(
+    (comment) => comment.parentCommentId == null
+)
+
+const replies = comments.filter(
+    (comment) => comment.parentCommentId != null
+)
+
+const sortedComments = [...mainComments]
+    .sort((a, b) =>
+        sortOrder === 'recent'
+            ? new Date(b.createdAt) - new Date(a.createdAt)
+            : new Date(a.createdAt) - new Date(b.createdAt)
+    )
+    .flatMap((mainComment) => {
+        const commentReplies = replies
+            .filter(
+                (reply) => reply.parentCommentId === mainComment.id
+            )
+            .sort(
+                (a, b) =>
+                    new Date(a.createdAt) - new Date(b.createdAt)
+            )
+
+        return [mainComment, ...commentReplies]
+    })
 
 useEffect(() => {
     setIsReposted(post.isReposted ?? false)
     setRepostCount(post.repostCount ?? 0)
 }, [post.isReposted, post.repostCount, post.id])
-
-
-    return new Date(a.createdAt) - new Date(b.createdAt)
-})
 
     const handleComment = async () => {
                 if (!commentContent.trim()) return
@@ -259,6 +279,48 @@ useEffect(() => {
         fetchComments()
     }, [isCommentOpen, post.id])
 
+
+const handleReply = async () => {
+    if (!replyContent.trim() || !replyToComment) return
+
+    try {
+        const token = sessionStorage.getItem('accessToken')
+
+        await axios.post(
+            `https://localhost:7151/api/posts/${post.id}/comments`,
+            {
+                content: replyContent.trim(),
+                parentCommentId: replyToComment.id
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        )
+
+        const response = await axios.get(
+            `https://localhost:7151/api/posts/${post.id}/comments`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        )
+
+        setComments(response.data)
+        setCommentCount(response.data.length)
+
+        setReplyContent('')
+        setReplyToComment(null)
+
+    } catch (error) {
+        console.error('Error creating reply:', error)
+        alert('Failed to send reply.')
+    }
+}
+
+
     const handleDeleteComment = async (commentId) => {
     if (!window.confirm('Delete this comment?')) return
 
@@ -285,6 +347,51 @@ useEffect(() => {
 
     } catch (error) {
         console.error('Error deleting comment:', error)
+    }
+}
+
+
+const handleCommentLike = async (commentId, isLiked) => {
+    try {
+        const token = sessionStorage.getItem('accessToken')
+
+        if (isLiked) {
+            await axios.delete(
+                `https://localhost:7151/api/comments/${commentId}/like`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+        } else {
+            await axios.post(
+                `https://localhost:7151/api/comments/${commentId}/like`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+        }
+
+        setComments(prev =>
+            prev.map(comment =>
+                comment.id === commentId
+                    ? {
+                        ...comment,
+                        isLiked: !isLiked,
+                        likeCount: Math.max(
+                            0,
+                            (comment.likeCount ?? 0) + (isLiked ? -1 : 1)
+                        )
+                    }
+                    : comment
+            )
+        )
+    } catch (error) {
+        console.error('Failed to update comment like:', error)
     }
 }
 
@@ -448,59 +555,149 @@ useEffect(() => {
                     </div>
                 </div>
                 
-                <div className="comments-list">
-                    {sortedComments.map((comment) => (
-                    <div key={comment.id} className="comment-row">
-                        <div className="comment-avatar">
-                            {comment.profileImageUrl ? (
-                                <img
-                                    src={`https://localhost:7151${comment.profileImageUrl}`}
-                                    alt={`${comment.displayName}'s profile`}
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'cover',
-                                        borderRadius: '50%'
-                                    }}
-                                />
-                            ) : (
-                                comment.displayName.charAt(0).toUpperCase()
-                            )}
-                        </div>
+                
+<div className="comments-list">
+    {sortedComments.map((comment) => (
+        
+            <div
+                key={comment.id}
+                className={`comment-thread ${
+                    comment.parentCommentId != null ? 'is-reply' : ''
+                }`}
+            >
 
-                        <div className="comment-item">
-                            <strong>{comment.displayName}</strong>
-                            <span> @{comment.username}</span>
-                            <p>{comment.content}</p>
-                            
-                            <div className="comment-actions">
-                                <button type="button" aria-label="Like comment">
-                                    <Heart size={15} />
-                                </button>
 
-                                <button type="button" className="comment-reply">
-                                    <CornerUpLeft size={15} />
-                                    <span>Reply</span>
-                                </button>
-
-                                <button type="button" aria-label="More options">
-                                    <MoreHorizontal size={18} />
-                                </button>
-                                {Number(comment.userId) === Number(currentUserId) && (
-                                    <button
-                                        type="button"
-                                        className="comment-delete"
-                                        onClick={() => handleDeleteComment(comment.id)}
-                                        aria-label="Delete comment"
-                                    >
-                                        <Trash2 size={15} />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                ))}
+            <div className="comment-row">
+                <div className="comment-avatar">
+                    {comment.profileImageUrl ? (
+                        <img
+                            src={`https://localhost:7151${comment.profileImageUrl}`}
+                            alt={`${comment.displayName}'s profile`}
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                borderRadius: '50%'
+                            }}
+                        />
+                    ) : (
+                        comment.displayName.charAt(0).toUpperCase()
+                    )}
                 </div>
+
+                <div className="comment-item">
+                    <strong>{comment.displayName}</strong>
+                    <span> @{comment.username}</span>
+                    <p>{comment.content}</p>
+
+                    <div className="comment-actions">
+
+                        <button
+                            type="button"
+                            className={`comment-like ${comment.isLiked ? 'liked' : ''}`}
+                            onClick={() => handleCommentLike(comment.id, comment.isLiked)}
+                            aria-label={comment.isLiked ? 'Unlike comment' : 'Like comment'}
+                            aria-pressed={comment.isLiked ?? false}
+                        >
+                            <Heart
+                                size={15}
+                                fill={comment.isLiked ? 'currentColor' : 'none'}
+                            />
+
+                            {comment.likeCount > 0 && (
+                                <span className="comment-like-count">
+                                    {comment.likeCount}
+                                </span>
+                            )}
+                        </button>
+
+                       
+                        {comment.parentCommentId == null && (
+                            <button
+                                type="button"
+                                className="comment-reply"
+                                onClick={() => {
+                                    if (replyToComment?.id === comment.id) {
+                                        setReplyToComment(null)
+                                        setReplyContent('')
+                                    } else {
+                                        setReplyToComment(comment)
+                                        setReplyContent('')
+                                    }
+                                }}
+                            >
+                                <CornerUpLeft size={15} />
+                                <span>Reply</span>
+                            </button>
+                        )}
+
+
+                        <button
+                            type="button"
+                            aria-label="More options"
+                        >
+                            <MoreHorizontal size={18} />
+                        </button>
+
+                        {Number(comment.userId) === Number(currentUserId) && (
+                            <button
+                                type="button"
+                                className="comment-delete"
+                                onClick={() => handleDeleteComment(comment.id)}
+                                aria-label="Delete comment"
+                            >
+                                <Trash2 size={15} />
+                            </button>
+                        )}
+
+                    </div>
+                </div>
+            </div>
+
+            {replyToComment?.id === comment.id && (
+                <div className="reply-composer">
+
+                    <div className="reply-composer-header">
+                        <span>
+                            Replying to @{comment.username}
+                        </span>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setReplyToComment(null)
+                                setReplyContent('')
+                            }}
+                            aria-label="Cancel reply"
+                        >
+                            ×
+                        </button>
+                    </div>
+
+                    <textarea
+                        placeholder="Write your reply..."
+                        value={replyContent}
+                        onChange={(e) => setReplyContent(e.target.value)}
+                        maxLength={500}
+                    />
+
+                    
+                    <button
+                        type="button"
+                        className="reply-submit"
+                        onClick={handleReply}
+                        disabled={!replyContent.trim()}
+                    >
+                        Reply
+                    </button>
+
+
+                </div>
+            )}
+
+        </div>
+    ))}
+</div>
 
                 <div className="comment-composer">
                 <div className="comment-composer-avatar">

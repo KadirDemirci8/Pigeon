@@ -19,6 +19,7 @@ namespace Pigeon.Api.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Bookmark> Bookmarks { get; set; }
         public DbSet<Repost> Reposts { get; set; }
+        public DbSet<CommentLike> CommentLikes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -117,6 +118,28 @@ namespace Pigeon.Api.Data
                 .HasIndex(r => new { r.UserId, r.PostId })
                 .IsUnique();
 
+
+            modelBuilder.Entity<CommentLike>()
+                .HasOne(cl => cl.User)
+                .WithMany()
+                .HasForeignKey(cl => cl.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<CommentLike>()
+                .HasOne(cl => cl.Comment)
+                .WithMany(c => c.Likes)
+                .HasForeignKey(cl => cl.CommentId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<CommentLike>()
+                .HasIndex(cl => new { cl.UserId, cl.CommentId })
+                .IsUnique();
+
+            modelBuilder.Entity<Comment>()
+                .HasOne(c => c.ParentComment)
+                .WithMany()
+                .HasForeignKey(c => c.ParentCommentId)
+                .OnDelete(DeleteBehavior.NoAction);
 
 
         }
