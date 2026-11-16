@@ -1,44 +1,88 @@
+
 import PostCard from './PostCard'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
-function Feed({ refreshKey, currentUserId, currentUser, onPostDeleted }) {
+function Feed({
+    activeTab,
+    refreshKey,
+    currentUserId,
+    currentUser,
+    onPostDeleted
+}) {
     const [posts, setPosts] = useState([])
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-                        const fetchPosts = async () => {
-                            try {
-                                const token = sessionStorage.getItem('accessToken')
+        let cancelled = false
 
-                                const response = await axios.get(
-                                    'https://localhost:7151/api/posts',
-                                    {
-                                        headers: {
-                                            Authorization: `Bearer ${token}`
-                                        }
-                                    }
-                                )
+        const fetchPosts = async () => {
+            setLoading(true)
+            setPosts([])
 
-                                setPosts(response.data)
-                            } catch (error) {
-                                console.error('Failed to load posts:', error)
-                            }
-                        }
+            try {
+                const token = sessionStorage.getItem('accessToken')
 
-                        fetchPosts()
-                    }, [refreshKey])
+                const endpoint = activeTab === 'following'
+                    ? 'https://localhost:7151/api/posts/following'
+                    : 'https://localhost:7151/api/posts'
+
+                const response = await axios.get(endpoint, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                })
+
+                if (!cancelled) {
+                    setPosts(response.data)
+                }
+            } catch (error) {
+                if (!cancelled) {
+                    console.error('Failed to load posts:', error)
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false)
+                }
+            }
+        }
+
+        fetchPosts()
+
+        return () => {
+            cancelled = true
+        }
+    }, [activeTab, refreshKey])
+
+    if (loading) {
+        return <div className="feed"><p>Loading posts...</p></div>
+    }
 
     return (
         <div className="feed">
-            {posts.map((post) => (
-                <PostCard
-                    key={post.id}
-                    post={post}
-                    currentUserId={currentUserId}
-                    currentUser={currentUser}
-                    onPostDeleted={onPostDeleted}
-                />
-            ))}
+            {posts.length === 0 ? (
+                <p>
+                    {activeTab === 'following'
+                        ? 'No posts from people you follow yet.'
+                        : 'No posts yet.'}
+                </p>
+            ) : (
+                posts.map((post) => (
+                    <div
+                        key={`${post.id}-${post.repostedByUsername ?? 'original'}`}
+                    >
+                    
+
+                        <PostCard
+                            post={post}
+                            repostedBy={post.repostedBy}
+                            currentUserId={currentUserId}
+                            currentUser={currentUser}
+                            onPostDeleted={onPostDeleted}
+                        />
+                    </div>
+                ))
+            )}
         </div>
     )
 }

@@ -5,7 +5,7 @@ import axios from 'axios'
 import { Link } from 'react-router-dom'
 
 
-function PostCard({ post, currentUserId, currentUser, onPostDeleted, onBookmarkRemoved }) {
+function PostCard({ post, currentUserId, currentUser, onPostDeleted, onBookmarkRemoved, onRepostRemoved, repostedBy }) {
 
     const isOwner = Number(post.userId) === Number(currentUserId)
 
@@ -115,6 +115,50 @@ const handleBookmark = async () => {
 }
 
 
+const handleRepost = async () => {
+    if (repostLoading) return
+
+    setRepostLoading(true)
+
+    try {
+        const token = sessionStorage.getItem('accessToken')
+
+        if (isReposted) {
+            await axios.delete(
+                `https://localhost:7151/api/reposts/${post.id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setIsReposted(false)
+            setRepostCount(prev => prev - 1)
+            onRepostRemoved?.(post.id)
+        } else {
+            await axios.post(
+                `https://localhost:7151/api/reposts/${post.id}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setIsReposted(true)
+            setRepostCount(prev => prev + 1)
+        }
+    } catch (error) {
+        console.error('Failed to update repost:', error)
+        alert('Could not update repost. Please try again.')
+    } finally {
+        setRepostLoading(false)
+    }
+}
+
+
     const [isLiked, setIsLiked] = useState(post.isLiked)
     const [likeCount, setLikeCount] = useState(post.likeCount)
     const [commentCount, setCommentCount] = useState(post.commentCount ?? 0)
@@ -122,7 +166,15 @@ const handleBookmark = async () => {
     post.isBookmarked ?? false
     )
     const [bookmarkLoading, setBookmarkLoading] = useState(false)
-    const [isReposted, setIsReposted] = useState(false)
+    const [isReposted, setIsReposted] = useState(
+        post.isReposted ?? false
+    )
+
+    const [repostCount, setRepostCount] = useState(
+        post.repostCount ?? 0
+    )
+
+    const [repostLoading, setRepostLoading] = useState(false)
     const [isCommentOpen, setIsCommentOpen] = useState(false)
     const [comments, setComments] = useState([])
     const [commentContent, setCommentContent] = useState('')
@@ -133,6 +185,13 @@ const handleBookmark = async () => {
     if (sortOrder === 'recent') {
         return new Date(b.createdAt) - new Date(a.createdAt)
     }
+
+
+useEffect(() => {
+    setIsReposted(post.isReposted ?? false)
+    setRepostCount(post.repostCount ?? 0)
+}, [post.isReposted, post.repostCount, post.id])
+
 
     return new Date(a.createdAt) - new Date(b.createdAt)
 })
@@ -231,6 +290,12 @@ const handleBookmark = async () => {
 
     return (
         <article className="post-card">
+            {repostedBy && (
+                <div className="post-repost-label">
+                    <Repeat2 size={15} />
+                    <span>{repostedBy} reposted</span>
+                </div>
+            )}
             <div className="post-header">
                 <Link
                     to={`/profile/${post.username}`}
@@ -301,15 +366,21 @@ const handleBookmark = async () => {
                 </button>
 
 
+                
                 <button
                     type="button"
                     className={`action-repost ${isReposted ? 'reposted' : ''}`}
-                    onClick={() => setIsReposted(!isReposted)}
+                    onClick={handleRepost}
+                    disabled={repostLoading}
                     aria-label={isReposted ? 'Undo repost' : 'Repost'}
                     aria-pressed={isReposted}
                 >
                     <Repeat2 size={19} />
+                    {repostCount > 0 && (
+                        <span className="repost-count">{repostCount}</span>
+                    )}
                 </button>
+
 
                 
                 <button

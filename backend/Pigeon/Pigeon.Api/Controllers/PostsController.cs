@@ -88,6 +88,10 @@ namespace Pigeon.Api.Controllers
                     profileImageUrl = p.User.ProfileImageUrl,
 
                     likeCount = p.Likes.Count(),
+                    repostCount = p.Reposts.Count(),
+                    isReposted = userId != null &&
+                        p.Reposts.Any(r => r.UserId == userId.Value),
+
                     commentCount = _context.Comments.Count(c => c.PostId == p.Id),
                     isLiked = p.Likes.Any(l => l.UserId == userId),
                     isBookmarked = userId != null &&
@@ -100,6 +104,100 @@ namespace Pigeon.Api.Controllers
 
             return Ok(posts);
         }
+
+
+
+        [Authorize]
+        [HttpGet("following")]
+        public async Task<IActionResult> GetFollowingPosts()
+        {
+            var userId = GetCurrentUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            // Takip ettiğimiz kullanıcılar
+            var followingIds = _context.UserFollows
+                .Where(f => f.FollowerId == userId.Value)
+                .Select(f => f.FollowingId);
+
+            // 1. Takip edilen kullanıcıların kendi gönderileri
+            var posts = await _context.Posts
+                .AsNoTracking()
+                .Where(p => followingIds.Contains(p.UserId))
+                .Select(p => new
+                {
+                    id = p.Id,
+                    userId = p.UserId,
+                    content = p.Content,
+                    createdAt = p.CreatedAt,
+                    username = p.User.Username,
+                    displayName = p.User.DisplayName,
+                    profileImageUrl = p.User.ProfileImageUrl,
+
+                    likeCount = p.Likes.Count(),
+                    commentCount = p.Comments.Count(),
+                    repostCount = p.Reposts.Count(),
+
+                    isLiked = p.Likes.Any(l => l.UserId == userId.Value),
+                    isReposted = p.Reposts.Any(r => r.UserId == userId.Value),
+
+                    isBookmarked = _context.Bookmarks.Any(b =>
+                        b.PostId == p.Id &&
+                        b.UserId == userId.Value),
+
+                    repostedBy = (string?)null,
+                    repostedByUsername = (string?)null,
+                    feedCreatedAt = p.CreatedAt
+                })
+                .ToListAsync();
+
+            // 2. Takip edilen kullanıcıların repostları
+            var reposts = await _context.Reposts
+                .AsNoTracking()
+                .Where(r => followingIds.Contains(r.UserId))
+                .Select(r => new
+                {
+                    id = r.Post.Id,
+                    userId = r.Post.UserId,
+                    content = r.Post.Content,
+                    createdAt = r.Post.CreatedAt,
+                    username = r.Post.User.Username,
+                    displayName = r.Post.User.DisplayName,
+                    profileImageUrl = r.Post.User.ProfileImageUrl,
+
+                    likeCount = r.Post.Likes.Count(),
+                    commentCount = r.Post.Comments.Count(),
+                    repostCount = r.Post.Reposts.Count(),
+
+                    isLiked = r.Post.Likes.Any(l => l.UserId == userId.Value),
+                    isReposted = r.Post.Reposts.Any(rp =>
+                        rp.UserId == userId.Value),
+
+                    isBookmarked = _context.Bookmarks.Any(b =>
+                        b.PostId == r.PostId &&
+                        b.UserId == userId.Value),
+
+                    repostedBy = (string?)r.User.DisplayName,
+                    repostedByUsername = (string?)r.User.Username,
+                    feedCreatedAt = r.CreatedAt
+                })
+                .ToListAsync();
+
+            
+            var followingFeed = posts
+                .Concat(reposts)
+                .GroupBy(p => p.id)
+                .Select(group => group
+                    .OrderByDescending(p => p.feedCreatedAt)
+                    .First())
+                .OrderByDescending(p => p.feedCreatedAt)
+                .ToList();
+
+            return Ok(followingFeed);
+        }
+
+
 
         [AllowAnonymous]
         [HttpGet("user/{username}")]
@@ -120,14 +218,26 @@ namespace Pigeon.Api.Controllers
                     username = p.User.Username,
                     displayName = p.User.DisplayName,
                     profileImageUrl = p.User.ProfileImageUrl,
+
                     likeCount = p.Likes.Count(),
-                    commentCount = _context.Comments.Count(c => c.PostId == p.Id),
-                    isLiked = p.Likes.Any(l => l.UserId == userId)
+                    commentCount = p.Comments.Count(),
+                    repostCount = p.Reposts.Count(),
+
+                    isLiked = p.Likes.Any(l => l.UserId == userId),
+
+                    isReposted = userId != null &&
+                        p.Reposts.Any(r => r.UserId == userId.Value),
+
+                    isBookmarked = userId != null &&
+                        _context.Bookmarks.Any(b =>
+                            b.PostId == p.Id &&
+                            b.UserId == userId.Value)
                 })
                 .ToListAsync();
 
             return Ok(posts);
         }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePost(int id)
@@ -157,6 +267,14 @@ namespace Pigeon.Api.Controllers
                 .ToListAsync();
 
             _context.Bookmarks.RemoveRange(bookmarks);
+
+
+            var reposts = await _context.Reposts
+                .Where(r => r.PostId == id)
+                .ToListAsync();
+
+            _context.Reposts.RemoveRange(reposts);
+
 
             // Ardından gönderiyi sil
             _context.Posts.Remove(post);

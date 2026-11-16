@@ -70,12 +70,15 @@ useEffect(() => {
             onPostCreated={() => setRefreshKey(prev => prev + 1)}
         />
 
-       <Feed
+       
+        <Feed
+            activeTab={activeTab}
             refreshKey={refreshKey}
             currentUserId={Number(sessionStorage.getItem('userId'))}
             currentUser={currentUser}
             onPostDeleted={() => setRefreshKey(prev => prev + 1)}
         />
+
 
         <button onClick={handleLogout}>
             Logout

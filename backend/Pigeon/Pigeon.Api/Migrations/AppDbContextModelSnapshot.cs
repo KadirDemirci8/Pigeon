@@ -169,6 +169,33 @@ namespace Pigeon.Api.Migrations
                     b.ToTable("Posts");
                 });
 
+            modelBuilder.Entity("Pigeon.Api.Models.Repost", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("UserId", "PostId")
+                        .IsUnique();
+
+                    b.ToTable("Reposts");
+                });
+
             modelBuilder.Entity("Pigeon.Api.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -334,6 +361,25 @@ namespace Pigeon.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Pigeon.Api.Models.Repost", b =>
+                {
+                    b.HasOne("Pigeon.Api.Models.Post", "Post")
+                        .WithMany("Reposts")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Pigeon.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Pigeon.Api.Models.UserFollow", b =>
                 {
                     b.HasOne("Pigeon.Api.Models.User", "Follower")
@@ -358,6 +404,8 @@ namespace Pigeon.Api.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Likes");
+
+                    b.Navigation("Reposts");
                 });
 
             modelBuilder.Entity("Pigeon.Api.Models.User", b =>

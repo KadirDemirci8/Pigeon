@@ -499,3 +499,16 @@
 .comment-count {
     margin-left: 6px;
 }
+.repost-count {
+    margin-left: 6px;
+}
+
+.post-repost-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 12px;
+    color: #777;
+    font-size: 13px;
+    font-weight: 500;
+}

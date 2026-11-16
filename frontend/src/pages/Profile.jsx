@@ -26,6 +26,9 @@ function Profile() {
     const [loading, setLoading] = useState(true)
     const [notFound, setNotFound] = useState(false)
     const [posts, setPosts] = useState([])
+    const [reposts, setReposts] = useState([])
+    const [repostsLoading, setRepostsLoading] = useState(false)
+    const [activeProfileTab, setActiveProfileTab] = useState('posts')
     const [isFollowLoading, setIsFollowLoading] = useState(false)
     const [followModal, setFollowModal] = useState(null)
     const [followUsers, setFollowUsers] = useState([])
@@ -91,9 +94,16 @@ useEffect(() => {
             setFollowingCount(followResponse.data.followingCount)
             setIsFollowing(followResponse.data.isFollowing)
 
+            
             const postsResponse = await axios.get(
-                `https://localhost:7151/api/posts/user/${username}`
+                `https://localhost:7151/api/posts/user/${username}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
             )
+
 
             setPosts(postsResponse.data)
 
@@ -416,6 +426,51 @@ const handleSaveProfile = async () => {
         setIsSaving(false)
     }
 }
+
+
+const fetchPosts = async () => {
+    try {
+        const token = sessionStorage.getItem('accessToken')
+
+        const response = await axios.get(
+            `https://localhost:7151/api/posts/user/${username}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        )
+
+        setPosts(response.data)
+    } catch (error) {
+        console.error('Failed to refresh profile posts:', error)
+    }
+}
+
+
+const fetchReposts = async () => {
+    setRepostsLoading(true)
+
+    try {
+        const token = sessionStorage.getItem('accessToken')
+
+        const response = await axios.get(
+            `https://localhost:7151/api/reposts/user/${username}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        )
+
+        setReposts(response.data)
+    } catch (error) {
+        console.error('Failed to load reposts:', error)
+    } finally {
+        setRepostsLoading(false)
+    }
+}
+
 
 return (
     <MainLayout>
@@ -780,33 +835,98 @@ return (
                 </div>
             </div>
 
-                    <div className="profile-tabs">
-                        <button type="button" className="profile-tab active">
-                            Posts
-                        </button>
-                    </div>
+                    
+                   
+<div className="profile-tabs">
+    <button
+        type="button"
+        className={`profile-tab ${activeProfileTab === 'posts' ? 'active' : ''}`}
+        onClick={() => {
+        setActiveProfileTab('posts')
+        fetchPosts()
+    }}
+    >
+        Posts
+    </button>
 
-                    <div className="feed">
-                        {posts.length === 0 && (
-                        <p className="profile-empty-posts">
-                            No posts yet.
-                        </p>
-                    )}
+    <button
+        type="button"
+        className={`profile-tab ${activeProfileTab === 'reposts' ? 'active' : ''}`}
+        onClick={() => {
+            setActiveProfileTab('reposts')
+            fetchReposts()
+        }}
+    >
+        Reposts
+    </button>
+</div>
 
-                        {posts.map((post) => (
-                            <PostCard
-                                key={post.id}
-                                post={post}
-                                currentUserId={Number(sessionStorage.getItem('userId'))}
-                                currentUser={currentUser}
-                                onPostDeleted={() => {
-                                    setPosts(prev => prev.filter(p => p.id !== post.id))
-                                }}
-                            />
-                        ))}
-                    </div>
-                                </>
-            )}
+{activeProfileTab === 'posts' ? (
+    <div className="feed">
+        {posts.length === 0 && (
+            <p className="profile-empty-posts">
+                No posts yet.
+            </p>
+        )}
+
+        {posts.map((post) => (
+            <PostCard
+                key={post.id}
+                post={post}
+                currentUserId={Number(sessionStorage.getItem('userId'))}
+                currentUser={currentUser}
+                onPostDeleted={() => {
+                    setPosts(prev =>
+                        prev.filter(p => p.id !== post.id)
+                    )
+                }}
+            />
+        ))}
+    </div>
+) : (
+    
+<div className="feed">
+    {repostsLoading ? (
+        <p className="profile-empty-posts">
+            Loading reposts...
+        </p>
+    ) : reposts.length === 0 ? (
+        <p className="profile-empty-posts">
+            No reposts yet.
+        </p>
+    ) : (
+        reposts.map(post => (
+            <div key={post.id}>
+                
+
+                
+                <PostCard
+                    post={post}
+                    currentUserId={Number(sessionStorage.getItem('userId'))}
+                    currentUser={currentUser}
+                    onPostDeleted={fetchReposts}
+                    repostedBy={profile.displayName}
+                    
+                    
+                    onRepostRemoved={(postId) => {
+                        setReposts(prev =>
+                            prev.filter(p => p.id !== postId)
+                        )
+
+                        fetchPosts()
+                    }}
+
+
+                />
+
+            </div>
+        ))
+    )}
+</div>
+
+)}
+        </>
+    )}
         </div>
     </MainLayout>
 )
