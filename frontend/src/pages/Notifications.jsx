@@ -123,11 +123,26 @@ const handleFollowBack = async (e, actorId) => {
                 )
             }
 
+            
             if (notification.type === 'Follow') {
                 navigate(`/profile/${notification.actorUsername}`)
+            
+            
+            } else if (notification.postId != null) {
+                navigate(`/posts/${notification.postId}`, {
+                    state: {
+                        openComments:
+                            notification.type === 'Comment' ||
+                            notification.type === 'Reply',
+                        commentId: notification.commentId ?? null
+                    }
+                })
+
+
             } else {
                 navigate('/home')
             }
+
         } catch (error) {
             console.error('Failed to open notification:', error)
             setError('Could not open notification. Please try again.')
@@ -286,17 +301,23 @@ const handleFollowBack = async (e, actorId) => {
                                     notification.actorDisplayName ||
                                     notification.actorUsername
 
-                                const notificationText = {
-                                    Follow: 'started following you.',
-                                    Like: 'liked your post.',
-                                    Comment: 'commented on your post.'
-                                }
+                                
+                            const notificationText = {
+                                Follow: 'started following you.',
+                                Like: 'liked your post.',
+                                Comment: 'commented on your post.',
+                                Reply: 'replied to your comment.'
+                            }
 
-                                const typeIcon = {
-                                    Follow: '👤',
-                                    Like: '❤️',
-                                    Comment: '💬'
-                                }
+
+                                
+                            const typeIcon = {
+                                Follow: '👤',
+                                Like: '❤️',
+                                Comment: '💬',
+                                Reply: '↩️'
+                            }
+
 
                                 return (
                                     <div

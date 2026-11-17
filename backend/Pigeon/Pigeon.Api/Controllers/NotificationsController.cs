@@ -55,6 +55,7 @@ namespace Pigeon.Api.Controllers
                     isRead = n.IsRead,
                     createdAt = n.CreatedAt,
                     postId = n.PostId,
+                    commentId = n.CommentId,
                     actorId = n.ActorId,
                     actorUsername = n.Actor.Username,
                     actorDisplayName = n.Actor.DisplayName,
@@ -64,6 +65,7 @@ namespace Pigeon.Api.Controllers
 
             return Ok(notifications);
         }
+
 
         [HttpPatch("{id:int}/read")]
         public async Task<IActionResult> MarkAsRead(int id)

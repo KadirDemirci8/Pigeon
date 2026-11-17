@@ -5,7 +5,7 @@ import axios from 'axios'
 import { Link } from 'react-router-dom'
 
 
-function PostCard({ post, currentUserId, currentUser, onPostDeleted, onBookmarkRemoved, onRepostRemoved, repostedBy }) {
+function PostCard({ post, currentUserId, currentUser, onPostDeleted, onBookmarkRemoved, onRepostRemoved, repostedBy, autoOpenComments = false, targetCommentId = null}) {
 
     const isOwner = Number(post.userId) === Number(currentUserId)
 
@@ -175,7 +175,7 @@ const handleRepost = async () => {
     )
 
     const [repostLoading, setRepostLoading] = useState(false)
-    const [isCommentOpen, setIsCommentOpen] = useState(false)
+    const [isCommentOpen, setIsCommentOpen] = useState(autoOpenComments)
     const [comments, setComments] = useState([])
     const [commentContent, setCommentContent] = useState('')
     const [replyToComment, setReplyToComment] = useState(null)
@@ -280,6 +280,50 @@ useEffect(() => {
     }, [isCommentOpen, post.id])
 
 
+useEffect(() => {
+    if (!isCommentOpen || targetCommentId == null) return
+
+    const targetExists = comments.some(
+        comment => comment.id === Number(targetCommentId)
+    )
+
+    if (!targetExists) return
+
+    const element = document.getElementById(
+        `comment-${post.id}-${targetCommentId}`
+    )
+
+    if (element) {
+        element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        })
+    }
+}, [comments, isCommentOpen, targetCommentId, post.id])
+
+useEffect(() => {
+    if (!isCommentOpen || targetCommentId == null) return
+
+    const targetExists = comments.some(
+        comment => comment.id === Number(targetCommentId)
+    )
+
+    if (!targetExists) return
+
+    const element = document.getElementById(
+        `comment-${post.id}-${targetCommentId}`
+    )
+
+    if (element) {
+        element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        })
+    }
+}, [comments, isCommentOpen, targetCommentId, post.id])
+
+
+
 const handleReply = async () => {
     if (!replyContent.trim() || !replyToComment) return
 
@@ -321,8 +365,9 @@ const handleReply = async () => {
 }
 
 
-    const handleDeleteComment = async (commentId) => {
-    if (!window.confirm('Delete this comment?')) return
+    
+const handleDeleteComment = async (commentId) => {
+    if (!window.confirm('Delete this comment and its replies?')) return
 
     try {
         await axios.delete(
@@ -334,10 +379,11 @@ const handleReply = async () => {
             }
         )
 
-        
         setComments(prev => {
             const updatedComments = prev.filter(
-                comment => comment.id !== commentId
+                comment =>
+                    comment.id !== commentId &&
+                    comment.parentCommentId !== commentId
             )
 
             setCommentCount(updatedComments.length)
@@ -559,12 +605,19 @@ const handleCommentLike = async (commentId, isLiked) => {
 <div className="comments-list">
     {sortedComments.map((comment) => (
         
+            
             <div
                 key={comment.id}
+                id={`comment-${post.id}-${comment.id}`}
+                
                 className={`comment-thread ${
                     comment.parentCommentId != null ? 'is-reply' : ''
+                } ${
+                    Number(targetCommentId) === comment.id ? 'comment-highlight' : ''
                 }`}
+
             >
+
 
 
             <div className="comment-row">

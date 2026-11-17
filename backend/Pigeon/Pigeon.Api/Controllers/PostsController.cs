@@ -107,6 +107,46 @@ namespace Pigeon.Api.Controllers
         }
 
 
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetPost(int id)
+        {
+            var userId = GetCurrentUserId();
+
+            var post = await _context.Posts
+                .AsNoTracking()
+                .Where(p => p.Id == id)
+                .Select(p => new
+                {
+                    id = p.Id,
+                    userId = p.UserId,
+                    content = p.Content,
+                    createdAt = p.CreatedAt,
+                    username = p.User.Username,
+                    displayName = p.User.DisplayName,
+                    profileImageUrl = p.User.ProfileImageUrl,
+
+                    likeCount = p.Likes.Count(),
+                    repostCount = p.Reposts.Count(),
+                    isReposted = userId != null &&
+                        p.Reposts.Any(r => r.UserId == userId.Value),
+
+                    commentCount = _context.Comments.Count(c => c.PostId == p.Id),
+                    isLiked = p.Likes.Any(l => l.UserId == userId),
+                    isBookmarked = userId != null &&
+                        _context.Bookmarks.Any(b =>
+                            b.PostId == p.Id &&
+                            b.UserId == userId.Value)
+                })
+                .FirstOrDefaultAsync();
+
+            if (post == null)
+            {
+                return NotFound("Post not found.");
+            }
+
+            return Ok(post);
+        }
+
 
         [Authorize]
         [HttpGet("following")]
@@ -392,18 +432,18 @@ namespace Pigeon.Api.Controllers
         public async Task<IActionResult> CreateComment(
             int id, [FromBody] CreateCommentDto request)
         {
-            var post = await _context.Posts.FindAsync(id);
-
-            if (post == null)
-            {
-                return NotFound();
-            }
-
             var userId = GetCurrentUserId();
 
             if (userId == null)
             {
                 return Unauthorized();
+            }
+
+            var post = await _context.Posts.FindAsync(id);
+
+            if (post == null)
+            {
+                return NotFound();
             }
 
             var content = request.Content?.Trim();
@@ -413,10 +453,11 @@ namespace Pigeon.Api.Controllers
                 return BadRequest("Comment cannot be empty.");
             }
 
-            // Reply ise cevap verilen yorumu kontrol et
+            Comment? parentComment = null;
+
             if (request.ParentCommentId.HasValue)
             {
-                var parentComment = await _context.Comments
+                parentComment = await _context.Comments
                     .FirstOrDefaultAsync(c =>
                         c.Id == request.ParentCommentId.Value);
 
@@ -431,13 +472,15 @@ namespace Pigeon.Api.Controllers
                         "Parent comment does not belong to this post.");
                 }
 
-                // V1: Yalnızca ana yorumlara cevap verilebilir
                 if (parentComment.ParentCommentId != null)
                 {
                     return BadRequest(
                         "You cannot reply to a reply.");
                 }
             }
+
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
 
             var comment = new Comment
             {
@@ -449,23 +492,42 @@ namespace Pigeon.Api.Controllers
 
             _context.Comments.Add(comment);
 
-            // Mevcut gönderi bildirimi davranışını koruyoruz
-            if (post.UserId != userId.Value)
+            // Yeni yorumun ID'sini almak için önce yorumu kaydediyoruz.
+            await _context.SaveChangesAsync();
+
+            if (parentComment != null &&
+                parentComment.UserId != userId.Value)
             {
-                var notification = new Notification
+                _context.Notifications.Add(new Notification
+                {
+                    RecipientId = parentComment.UserId,
+                    ActorId = userId.Value,
+                    Type = "Reply",
+                    CommentId = parentComment.Id,
+                    PostId = id,
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            if (post.UserId != userId.Value &&
+                (parentComment == null ||
+                 parentComment.UserId != post.UserId))
+            {
+                _context.Notifications.Add(new Notification
                 {
                     RecipientId = post.UserId,
                     ActorId = userId.Value,
                     Type = "Comment",
+                    CommentId = comment.Id,
                     PostId = id,
                     IsRead = false,
                     CreatedAt = DateTime.UtcNow
-                };
-
-                _context.Notifications.Add(notification);
+                });
             }
 
             await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             return Ok(new
             {
@@ -473,6 +535,7 @@ namespace Pigeon.Api.Controllers
                 commentId = comment.Id
             });
         }
+
 
 
         [HttpGet("{id}/comments")]
@@ -507,6 +570,7 @@ namespace Pigeon.Api.Controllers
 
 
 
+
         [HttpDelete("comments/{commentId}")]
         public async Task<IActionResult> DeleteComment(int commentId)
         {
@@ -529,20 +593,33 @@ namespace Pigeon.Api.Controllers
                 return Forbid();
             }
 
-            // Yoruma ait beğenileri temizle
+            // Ana yoruma ait cevapları bul
+            var replies = await _context.Comments
+                .Where(c => c.ParentCommentId == commentId)
+                .ToListAsync();
+
+            // Silinecek bütün yorumların ID'lerini oluştur
+            var commentIds = replies
+                .Select(r => r.Id)
+                .Append(commentId)
+                .ToList();
+
+            // Ana yorumun ve cevapların beğenilerini temizle
             var commentLikes = await _context.CommentLikes
-                .Where(cl => cl.CommentId == commentId)
+                .Where(cl => commentIds.Contains(cl.CommentId))
                 .ToListAsync();
 
             _context.CommentLikes.RemoveRange(commentLikes);
 
-            // Yorumu sil
+            // Önce cevapları, sonra ana yorumu sil
+            _context.Comments.RemoveRange(replies);
             _context.Comments.Remove(comment);
 
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
+
 
     }
 }

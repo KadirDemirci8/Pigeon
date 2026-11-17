@@ -12,6 +12,7 @@ import Profile from './pages/Profile'
 import ProtectedRoute from './components/ProtectedRoute'
 import Explore from './pages/Explore'
 import Notifications from './pages/Notifications'
+import PostDetails from './pages/PostDetails'
 
 function App() {
     const [message, setMessage] = useState('Loading...')
@@ -69,6 +70,16 @@ function App() {
                 }
             />
 
+
+            <Route
+                path="/posts/:id"
+                element={
+                    <ProtectedRoute>
+                        <PostDetails />
+                    </ProtectedRoute>
+                }
+            />
+
             
             <Route
                 path="/bookmarks"
@@ -85,6 +96,8 @@ function App() {
                 element={<Profile />}
             />
         </Routes>
+
+        
     )
 }
 

@@ -149,6 +149,9 @@ namespace Pigeon.Api.Migrations
                     b.Property<int>("ActorId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("CommentId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
