@@ -1,6 +1,6 @@
 import './PostCard.css'
-import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Send, ChevronDown, CornerUpLeft, MoreHorizontal, ChevronLeft, ChevronRight} from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Send, ChevronDown, CornerUpLeft, MoreHorizontal, ChevronLeft, ChevronRight, Pencil} from 'lucide-react'
+import { useState, useEffect, useMemo   } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
 import { createPortal } from 'react-dom'
@@ -9,6 +9,118 @@ import { createPortal } from 'react-dom'
 function PostCard({ post, currentUserId, currentUser, onPostDeleted, onBookmarkRemoved, onRepostRemoved, repostedBy, autoOpenComments = false, targetCommentId = null}) {
 
     const isOwner = Number(post.userId) === Number(currentUserId)
+
+
+const handleSaveImages = async () => {
+    if (removedImageIds.length === 0 && newEditImages.length === 0) {
+        return true
+    }
+
+    if (isSavingImages) return false
+
+    setIsSavingImages(true)
+
+    try {
+        const token = sessionStorage.getItem('accessToken')
+        const formData = new FormData()
+
+        removedImageIds.forEach(id => {
+            formData.append('RemoveImageIds', id.toString())
+        })
+
+        newEditImages.forEach(file => {
+            formData.append('NewImages', file)
+        })
+
+        const response = await axios.put(
+            `https://localhost:7151/api/posts/${post.id}/images`,
+            formData,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        )
+
+        const updatedDetails = response.data.images ?? []
+
+        setDisplayImageDetails(updatedDetails)
+        setDisplayImages(updatedDetails.map(image => image.imageUrl))
+        setRemovedImageIds([])
+        setNewEditImages([])
+
+        return true
+    } catch (error) {
+        console.error('Failed to update post images:', error)
+        alert('Could not update post images. Please try again.')
+        return false
+    } finally {
+        setIsSavingImages(false)
+    }
+}
+
+
+
+const handleSaveEdit = async () => {
+    if (isSavingEdit || isSavingImages) return
+
+    const content = editedContent.trim()
+    const hasImageChanges =
+        removedImageIds.length > 0 || newEditImages.length > 0
+
+    const remainingImages =
+        displayImageDetails.length -
+        removedImageIds.length +
+        newEditImages.length
+
+    if (content.length > 1000) return
+
+    if (!content && remainingImages === 0) {
+        alert('A post must contain text or at least one image.')
+        return
+    }
+
+    if (!content && content !== displayContent.trim()) {
+        alert('Removing all post text is not supported yet.')
+        return
+    }
+
+    setIsSavingEdit(true)
+
+    try {
+        if (content !== displayContent.trim()) {
+            const token = sessionStorage.getItem('accessToken')
+
+            const response = await axios.put(
+                `https://localhost:7151/api/posts/${post.id}`,
+                { content },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setDisplayContent(response.data.content)
+            setEditedContent(response.data.content)
+        }
+
+        if (hasImageChanges) {
+            const imagesSaved = await handleSaveImages()
+
+            if (!imagesSaved) return
+        }
+
+        setIsEditing(false)
+    } catch (error) {
+        console.error('Failed to update post:', error)
+        alert('Could not update post. Please try again.')
+    } finally {
+        setIsSavingEdit(false)
+    }
+}
+
+
 
     const handleDelete = async () => {
     const confirmed = window.confirm(
@@ -160,6 +272,10 @@ const handleRepost = async () => {
 }
 
 
+
+
+
+
     const [isLiked, setIsLiked] = useState(post.isLiked)
     const [likeCount, setLikeCount] = useState(post.likeCount)
     const [commentCount, setCommentCount] = useState(post.commentCount ?? 0)
@@ -178,6 +294,38 @@ const handleRepost = async () => {
     const [repostLoading, setRepostLoading] = useState(false)
     const [isCommentOpen, setIsCommentOpen] = useState(autoOpenComments)
     const [activeImageIndex, setActiveImageIndex] = useState(null)
+    const [isEditing, setIsEditing] = useState(false)
+    const [editedContent, setEditedContent] = useState(post.content ?? '')
+    const [isSavingEdit, setIsSavingEdit] = useState(false)
+    const [displayContent, setDisplayContent] = useState(post.content ?? '')
+    const [removedImageIds, setRemovedImageIds] = useState([])
+    const [newEditImages, setNewEditImages] = useState([])
+    const [isSavingImages, setIsSavingImages] = useState(false)
+    const [displayImages, setDisplayImages] = useState(post.images ?? [])
+    const [displayImageDetails, setDisplayImageDetails] = useState(post.imageDetails ?? [])
+
+const newEditImagePreviews = useMemo(
+    () => newEditImages.map(file => ({
+        file,
+        url: URL.createObjectURL(file)
+    })),
+    [newEditImages]
+)
+
+useEffect(() => {
+    return () => {
+        newEditImagePreviews.forEach(image => {
+            URL.revokeObjectURL(image.url)
+        })
+    }
+}, [newEditImagePreviews])
+
+
+
+useEffect(() => {
+    setDisplayContent(post.content ?? '')
+}, [post.id, post.content])
+
 
 
 useEffect(() => {
@@ -188,7 +336,7 @@ useEffect(() => {
             setActiveImageIndex(null)
         }
 
-        if (!Array.isArray(post.images) || post.images.length < 2) {
+        if (!Array.isArray(displayImages) || displayImages.length < 2) {
             return
         }
 
@@ -196,7 +344,7 @@ useEffect(() => {
             event.preventDefault()
 
             setActiveImageIndex(prev =>
-                (prev + 1) % post.images.length
+                (prev + 1) % displayImages.length
             )
         }
 
@@ -204,7 +352,7 @@ useEffect(() => {
             event.preventDefault()
 
             setActiveImageIndex(prev =>
-                (prev - 1 + post.images.length) % post.images.length
+                (prev - 1 + displayImages.length) % displayImages.length
             )
         }
     }
@@ -214,7 +362,7 @@ useEffect(() => {
     return () => {
         window.removeEventListener('keydown', handleKeyDown)
     }
-}, [activeImageIndex, post.images])
+}, [activeImageIndex, displayImages])
 
 
     const [comments, setComments] = useState([])
@@ -523,7 +671,28 @@ return (
                         <span> @{post.username}</span>
                     </Link>
                 </div>
-                {isOwner && (
+                
+        {isOwner && (
+            <>
+                <button
+                    type="button"
+                    className="edit-post-button"
+                    aria-label="Edit post"
+                    
+                    
+            onClick={() => {
+                setEditedContent(displayContent)
+                setRemovedImageIds([])
+                setNewEditImages([])
+                setIsEditing(true)
+            }}
+
+
+                                        
+                >
+                    <Pencil size={18} />
+                </button>
+
                 <button
                     type="button"
                     className="delete-post-button"
@@ -532,30 +701,186 @@ return (
                 >
                     <Trash2 size={18} />
                 </button>
-                )}
+            </>
+        )}
+
             </div>
 
             
-{post.content && <p>{post.content}</p>}
 
-{Array.isArray(post.images) && post.images.length > 0 && (
+
+{isEditing ? (
+    <div className="post-edit-form">
+        <textarea
+            value={editedContent}
+            onChange={(e) => setEditedContent(e.target.value)}
+            placeholder="Write or edit your post..."
+            maxLength={1000}
+            rows={4}
+            autoFocus
+        />
+
+
+{displayImageDetails.length > 0 && (
+    <div className="post-edit-images">
+        {displayImageDetails
+            .filter(image => !removedImageIds.includes(image.id))
+            .map(image => (
+                <div
+                    key={image.id}
+                    className="post-edit-image-item"
+                >
+                    <img
+                        src={`https://localhost:7151${image.imageUrl}`}
+                        alt="Post attachment"
+                    />
+
+                    <button
+                        type="button"
+                        className="post-edit-image-remove"
+                        aria-label="Remove image"
+                        onClick={() => {
+                            setRemovedImageIds(prev => [...prev, image.id])
+                        }}
+                    >
+                        ×
+                    </button>
+                </div>
+            ))}
+    </div>
+)}
+
+
+<div className="post-edit-upload">
+    <label htmlFor={`edit-images-${post.id}`}>
+        + Add photos
+    </label>
+
+    <input
+        id={`edit-images-${post.id}`}
+        type="file"
+        accept=".jpg,.jpeg,.png,.webp"
+        multiple
+        onChange={(e) => {
+            const selectedFiles = Array.from(e.target.files || [])
+
+            const remainingCount =
+                displayImageDetails.length -
+                removedImageIds.length +
+                newEditImages.length
+
+            if (remainingCount + selectedFiles.length > 10) {
+                alert('A post can contain up to 10 images.')
+                e.target.value = ''
+                return
+            }
+
+            if (selectedFiles.some(file => file.size > 5 * 1024 * 1024)) {
+                alert('Each image must be 5 MB or smaller.')
+                e.target.value = ''
+                return
+            }
+
+            setNewEditImages(prev => [...prev, ...selectedFiles])
+            e.target.value = ''
+        }}
+    />
+</div>
+
+
+{newEditImagePreviews.length > 0 && (
+    <div className="post-edit-images">
+        {newEditImagePreviews.map((image, index) => (
+            <div
+                key={image.url}
+                className="post-edit-image-item"
+            >
+                <img
+                    src={image.url}
+                    alt={`New image ${index + 1}`}
+                />
+
+                <button
+                    type="button"
+                    className="post-edit-image-remove"
+                    aria-label={`Remove new image ${index + 1}`}
+                    onClick={() => {
+                        setNewEditImages(prev =>
+                            prev.filter((_, i) => i !== index)
+                        )
+                    }}
+                >
+                    ×
+                </button>
+            </div>
+        ))}
+    </div>
+)}
+
+
+        
+<div className="post-edit-actions">
+    <button
+        type="button"
+        className="post-edit-cancel"
+        disabled={isSavingEdit || isSavingImages}
+        onClick={() => {
+            setIsEditing(false)
+            setEditedContent(displayContent)
+            setRemovedImageIds([])
+            setNewEditImages([])
+        }}
+    >
+        Cancel
+    </button>
+
+    <button
+        type="button"
+        className="post-edit-save"
+        onClick={handleSaveEdit}
+        disabled={
+            isSavingEdit ||
+            isSavingImages ||
+            editedContent.length > 1000 ||
+            (
+                !editedContent.trim() &&
+                displayImageDetails.length -
+                    removedImageIds.length +
+                    newEditImages.length === 0
+            )
+        }
+    >
+        {isSavingEdit || isSavingImages ? 'Saving...' : 'Save'}
+    </button>
+</div>
+
+    </div>
+) : (
+    displayContent && <p>{displayContent}</p>
+)}
+
+
+
+
+
+{!isEditing && Array.isArray(displayImages) && displayImages.length > 0 && (
+
     <div
         className={`post-images-grid ${
-            post.images.length === 1 ? 'single-image' :
-            post.images.length === 2 ? 'two-images' :
-            post.images.length === 3 ? 'three-images' :
-            post.images.length === 4 ? 'four-images' :
+            displayImages.length === 1 ? 'single-image' :
+            displayImages.length === 2 ? 'two-images' :
+            displayImages.length === 3 ? 'three-images' :
+            displayImages.length === 4 ? 'four-images' :
             'many-images'
         }`}
     >
-        
-        {post.images.map((imageUrl, index) => (
+        {displayImages.map((imageUrl, index) => (
             <button
                 key={`${imageUrl}-${index}`}
                 type="button"
                 className="post-image-button"
                 onClick={() => setActiveImageIndex(index)}
-                aria-label={`Open image ${index + 1} of ${post.images.length}`}
+                aria-label={`Open image ${index + 1} of ${displayImages.length}`}
             >
                 <img
                     src={`https://localhost:7151${imageUrl}`}
@@ -564,9 +889,9 @@ return (
                 />
             </button>
         ))}
-
     </div>
 )}
+
 
 <div className="post-actions">
 
@@ -869,7 +1194,7 @@ return (
         </article>
 
         {activeImageIndex !== null &&
-            Array.isArray(post.images) &&
+            Array.isArray(displayImages) &&
             createPortal(
                 <div
                     className="post-lightbox"
@@ -888,7 +1213,7 @@ return (
                     </button>
 
                     
-{post.images.length > 1 && (
+{displayImages.length > 1 && (
     <button
         type="button"
         className="post-lightbox-prev"
@@ -896,7 +1221,7 @@ return (
         onClick={(e) => {
             e.stopPropagation()
             setActiveImageIndex(prev =>
-                (prev - 1 + post.images.length) % post.images.length
+                (prev - 1 + displayImages.length) % displayImages.length
             )
         }}
     >
@@ -905,12 +1230,12 @@ return (
 )}
 
         <img
-            src={`https://localhost:7151${post.images[activeImageIndex]}`}
+            src={`https://localhost:7151${displayImages[activeImageIndex]}`}
             alt={`Post image ${activeImageIndex + 1}`}
             onClick={(e) => e.stopPropagation()}
         />
 
-        {post.images.length > 1 && (
+        {displayImages.length > 1 && (
             <button
                 type="button"
                 className="post-lightbox-next"
@@ -918,7 +1243,7 @@ return (
                 onClick={(e) => {
                     e.stopPropagation()
                     setActiveImageIndex(prev =>
-                        (prev + 1) % post.images.length
+                        (prev + 1) % displayImages.length
                     )
                 }}
             >
@@ -928,7 +1253,7 @@ return (
 
 
                     <div className="post-lightbox-counter">
-                        {activeImageIndex + 1} / {post.images.length}
+                        {activeImageIndex + 1} / {displayImages.length}
                     </div>
                 </div>,
                 document.body

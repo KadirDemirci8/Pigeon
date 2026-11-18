@@ -824,3 +824,144 @@
         grid-auto-columns: 85%;
     }
 }
+
+.post-edit-form {
+    margin: 12px 0;
+}
+
+.post-edit-form textarea {
+    width: 100%;
+    min-height: 110px;
+    padding: 12px;
+    box-sizing: border-box;
+    border: 1px solid #d8d8df;
+    border-radius: 12px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    resize: vertical;
+    outline: none;
+}
+
+.post-edit-form textarea:focus {
+    border-color: #ee6795;
+}
+
+.post-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.post-edit-actions button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.post-edit-cancel {
+    background: #ededf0;
+    color: #333;
+}
+
+.post-edit-save {
+    background: #ee6795;
+    color: white;
+}
+
+.post-edit-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.edit-post-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+.edit-post-button:hover {
+    color: #ee6795;
+    background: rgba(238, 103, 149, 0.1);
+}
+
+
+.post-edit-form textarea {
+    display: block;
+    width: 100%;
+    min-height: 120px;
+    margin-bottom: 12px;
+    padding: 14px;
+    background-color: #fff;
+    border: 1px solid #e5cbd5;
+    border-radius: 12px;
+    color: #222;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.post-edit-form textarea:focus {
+    border-color: #ee6795;
+    outline: none;
+}
+
+
+.post-edit-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    margin: 12px 0;
+}
+
+.post-edit-image-item {
+    position: relative;
+    min-width: 0;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid #eee;
+}
+
+.post-edit-image-item img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.post-edit-image-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.post-edit-upload {
+    margin: 12px 0;
+}
+
+.post-edit-upload input {
+    display: block;
+    max-width: 100%;
+    margin-top: 8px;
+}

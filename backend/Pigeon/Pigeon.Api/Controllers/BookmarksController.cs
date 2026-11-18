@@ -119,6 +119,18 @@ namespace Pigeon.Api.Controllers
                         .Select(pi => pi.ImageUrl)
                         .ToList(),
 
+
+                    imageDetails = b.Post.Images
+                        .OrderBy(pi => pi.DisplayOrder)
+                        .Select(pi => new
+                        {
+                            id = pi.Id,
+                            imageUrl = pi.ImageUrl,
+                            displayOrder = pi.DisplayOrder
+                        })
+                        .ToList(),
+
+
                     likeCount = b.Post.Likes.Count(),
                     repostCount = b.Post.Reposts.Count(),
                     isReposted = userId != null &&
