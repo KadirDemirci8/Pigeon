@@ -1,8 +1,9 @@
 import './PostCard.css'
-import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Send, ChevronDown, CornerUpLeft, MoreHorizontal } from 'lucide-react'
+import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Send, ChevronDown, CornerUpLeft, MoreHorizontal, ChevronLeft, ChevronRight} from 'lucide-react'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
+import { createPortal } from 'react-dom'
 
 
 function PostCard({ post, currentUserId, currentUser, onPostDeleted, onBookmarkRemoved, onRepostRemoved, repostedBy, autoOpenComments = false, targetCommentId = null}) {
@@ -176,6 +177,46 @@ const handleRepost = async () => {
 
     const [repostLoading, setRepostLoading] = useState(false)
     const [isCommentOpen, setIsCommentOpen] = useState(autoOpenComments)
+    const [activeImageIndex, setActiveImageIndex] = useState(null)
+
+
+useEffect(() => {
+    if (activeImageIndex === null) return
+
+    const handleKeyDown = (event) => {
+        if (event.key === 'Escape') {
+            setActiveImageIndex(null)
+        }
+
+        if (!Array.isArray(post.images) || post.images.length < 2) {
+            return
+        }
+
+        if (event.key === 'ArrowRight') {
+            event.preventDefault()
+
+            setActiveImageIndex(prev =>
+                (prev + 1) % post.images.length
+            )
+        }
+
+        if (event.key === 'ArrowLeft') {
+            event.preventDefault()
+
+            setActiveImageIndex(prev =>
+                (prev - 1 + post.images.length) % post.images.length
+            )
+        }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+        window.removeEventListener('keydown', handleKeyDown)
+    }
+}, [activeImageIndex, post.images])
+
+
     const [comments, setComments] = useState([])
     const [commentContent, setCommentContent] = useState('')
     const [replyToComment, setReplyToComment] = useState(null)
@@ -441,8 +482,11 @@ const handleCommentLike = async (commentId, isLiked) => {
     }
 }
 
-    return (
+    
+return (
+    <>
         <article className="post-card">
+
             {repostedBy && (
                 <div className="post-repost-label">
                     <Repeat2 size={15} />
@@ -504,14 +548,23 @@ const handleCommentLike = async (commentId, isLiked) => {
             'many-images'
         }`}
     >
+        
         {post.images.map((imageUrl, index) => (
-            <img
+            <button
                 key={`${imageUrl}-${index}`}
-                src={`https://localhost:7151${imageUrl}`}
-                alt={`Post image ${index + 1}`}
-                loading="lazy"
-            />
+                type="button"
+                className="post-image-button"
+                onClick={() => setActiveImageIndex(index)}
+                aria-label={`Open image ${index + 1} of ${post.images.length}`}
+            >
+                <img
+                    src={`https://localhost:7151${imageUrl}`}
+                    alt={`Post image ${index + 1}`}
+                    loading="lazy"
+                />
+            </button>
         ))}
+
     </div>
 )}
 
@@ -812,8 +865,77 @@ const handleCommentLike = async (commentId, isLiked) => {
 
             </div>
         )}
+        
         </article>
-    )
+
+        {activeImageIndex !== null &&
+            Array.isArray(post.images) &&
+            createPortal(
+                <div
+                    className="post-lightbox"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Post image viewer"
+                    onClick={() => setActiveImageIndex(null)}
+                >
+                    <button
+                        type="button"
+                        className="post-lightbox-close"
+                        onClick={() => setActiveImageIndex(null)}
+                        aria-label="Close image"
+                    >
+                        ×
+                    </button>
+
+                    
+{post.images.length > 1 && (
+    <button
+        type="button"
+        className="post-lightbox-prev"
+        aria-label="Previous image"
+        onClick={(e) => {
+            e.stopPropagation()
+            setActiveImageIndex(prev =>
+                (prev - 1 + post.images.length) % post.images.length
+            )
+        }}
+    >
+        <ChevronLeft size={28} />
+    </button>
+)}
+
+        <img
+            src={`https://localhost:7151${post.images[activeImageIndex]}`}
+            alt={`Post image ${activeImageIndex + 1}`}
+            onClick={(e) => e.stopPropagation()}
+        />
+
+        {post.images.length > 1 && (
+            <button
+                type="button"
+                className="post-lightbox-next"
+                aria-label="Next image"
+                onClick={(e) => {
+                    e.stopPropagation()
+                    setActiveImageIndex(prev =>
+                        (prev + 1) % post.images.length
+                    )
+                }}
+            >
+                <ChevronRight size={28} />
+            </button>
+        )}
+
+
+                    <div className="post-lightbox-counter">
+                        {activeImageIndex + 1} / {post.images.length}
+                    </div>
+                </div>,
+                document.body
+            )
+        }
+    </>
+)
 }
 
 export default PostCard

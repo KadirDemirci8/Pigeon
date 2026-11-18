@@ -6,6 +6,8 @@ import axios from 'axios'
 
 function PostComposer({ onPostCreated, currentUser }) {
     const [content, setContent] = useState('')
+    const [isPosting, setIsPosting] = useState(false)
+    const postingRef = useRef(false)
     const [selectedImages, setSelectedImages] = useState([])
     const [imagePreviews, setImagePreviews] = useState([])
 
@@ -80,10 +82,21 @@ function PostComposer({ onPostCreated, currentUser }) {
     }
 
     
+
+
 const handlePost = async () => {
-    if (!content.trim() && selectedImages.length === 0) return
+    if (
+        postingRef.current ||
+        (!content.trim() && selectedImages.length === 0)
+    ) {
+        return
+    }
+
+    postingRef.current = true
+    setIsPosting(true)
 
     try {
+
         const token = sessionStorage.getItem('accessToken')
 
         const formData = new FormData()
@@ -92,10 +105,6 @@ const handlePost = async () => {
         selectedImages.forEach(file => {
             formData.append('Images', file)
         })
-
-        console.log('Selected images:', selectedImages.map(file => file.name))
-        console.log('FormData images:', formData.getAll('Images').map(file => file.name))
-
 
         await axios.post(
             'https://localhost:7151/api/posts/with-images',
@@ -114,8 +123,12 @@ const handlePost = async () => {
     } catch (error) {
         console.error('Failed to create post:', error)
         alert('Failed to create post. Please try again.')
-    }
+    } finally {
+    postingRef.current = false
+    setIsPosting(false)
 }
+}
+
 
 
     return (
@@ -202,14 +215,16 @@ const handlePost = async () => {
                     </button>
                 </div>
 
+                
                 <button
                     type="button"
                     className="composer-submit"
                     onClick={handlePost}
-                    disabled={!content.trim() && selectedImages.length === 0}
+                    disabled={isPosting || (!content.trim() && selectedImages.length === 0)}
                 >
-                    Post
+                    {isPosting ? 'Posting...' : 'Post'}
                 </button>
+
             </div>
 
         </div>

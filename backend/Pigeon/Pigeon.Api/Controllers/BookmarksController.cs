@@ -113,6 +113,12 @@ namespace Pigeon.Api.Controllers
                     username = b.Post.User.Username,
                     displayName = b.Post.User.DisplayName,
                     profileImageUrl = b.Post.User.ProfileImageUrl,
+
+                    images = b.Post.Images
+                        .OrderBy(pi => pi.DisplayOrder)
+                        .Select(pi => pi.ImageUrl)
+                        .ToList(),
+
                     likeCount = b.Post.Likes.Count(),
                     repostCount = b.Post.Reposts.Count(),
                     isReposted = userId != null &&

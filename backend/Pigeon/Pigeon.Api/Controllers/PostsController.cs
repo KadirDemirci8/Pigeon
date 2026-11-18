@@ -412,6 +412,10 @@ namespace Pigeon.Api.Controllers
                     username = p.User.Username,
                     displayName = p.User.DisplayName,
                     profileImageUrl = p.User.ProfileImageUrl,
+                    images = p.Images
+                        .OrderBy(pi => pi.DisplayOrder)
+                        .Select(pi => pi.ImageUrl)
+                        .ToList(),
 
                     likeCount = p.Likes.Count(),
                     commentCount = p.Comments.Count(),
@@ -443,6 +447,10 @@ namespace Pigeon.Api.Controllers
                     username = r.Post.User.Username,
                     displayName = r.Post.User.DisplayName,
                     profileImageUrl = r.Post.User.ProfileImageUrl,
+                    images = r.Post.Images
+                        .OrderBy(pi => pi.DisplayOrder)
+                        .Select(pi => pi.ImageUrl)
+                        .ToList(),
 
                     likeCount = r.Post.Likes.Count(),
                     commentCount = r.Post.Comments.Count(),
@@ -496,6 +504,11 @@ namespace Pigeon.Api.Controllers
                     username = p.User.Username,
                     displayName = p.User.DisplayName,
                     profileImageUrl = p.User.ProfileImageUrl,
+                    images = p.Images
+                        .OrderBy(pi => pi.DisplayOrder)
+                        .Select(pi => pi.ImageUrl)
+                        .ToList(),
+
 
                     likeCount = p.Likes.Count(),
                     commentCount = p.Comments.Count(),
@@ -517,54 +530,92 @@ namespace Pigeon.Api.Controllers
         }
 
 
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePost(int id)
         {
-            var post = await _context.Posts.FindAsync(id);
-
-            if (post == null)
-                return NotFound();
-
             var userId = GetCurrentUserId();
 
             if (userId == null)
                 return Unauthorized();
 
+            var post = await _context.Posts.FindAsync(id);
+
+            if (post == null)
+                return NotFound();
+
             if (post.UserId != userId.Value)
                 return Forbid();
 
-            // 1. Bookmark kayıtlarını temizle
+            var imageUrls = await _context.PostImages
+                .Where(pi => pi.PostId == id)
+                .Select(pi => pi.ImageUrl)
+                .ToListAsync();
+
             var bookmarks = await _context.Bookmarks
                 .Where(b => b.PostId == id)
                 .ToListAsync();
 
             _context.Bookmarks.RemoveRange(bookmarks);
 
-            // 2. Repost kayıtlarını temizle
             var reposts = await _context.Reposts
                 .Where(r => r.PostId == id)
                 .ToListAsync();
 
             _context.Reposts.RemoveRange(reposts);
 
-            // 3. Gönderinin yorumlarına ait beğenileri temizle
             var commentLikes = await _context.CommentLikes
                 .Where(cl => cl.Comment.PostId == id)
                 .ToListAsync();
 
             _context.CommentLikes.RemoveRange(commentLikes);
 
-            // 4. Gönderiye ait yorumları temizle
             var comments = await _context.Comments
                 .Where(c => c.PostId == id)
                 .ToListAsync();
 
             _context.Comments.RemoveRange(comments);
 
-            // 5. Son olarak gönderiyi sil
             _context.Posts.Remove(post);
 
             await _context.SaveChangesAsync();
+
+            // Veritabanı işlemi başarılı olduktan sonra fiziksel dosyaları temizle.
+            var uploadsFolder = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                "uploads",
+                "posts"
+            );
+
+            foreach (var imageUrl in imageUrls)
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(imageUrl) ||
+                        !imageUrl.StartsWith(
+                            "/uploads/posts/",
+                            StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    var fileName = Path.GetFileName(imageUrl);
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
+                catch (Exception ex) when (
+                    ex is IOException ||
+                    ex is UnauthorizedAccessException)
+                {
+                    Console.Error.WriteLine(
+                        $"Failed to delete post image: {ex.Message}");
+                }
+            }
 
             return NoContent();
         }

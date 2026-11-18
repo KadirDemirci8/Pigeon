@@ -118,6 +118,12 @@ namespace Pigeon.Api.Controllers
                     displayName = r.Post.User.DisplayName,
                     profileImageUrl = r.Post.User.ProfileImageUrl,
 
+                    images = r.Post.Images
+                        .OrderBy(pi => pi.DisplayOrder)
+                        .Select(pi => pi.ImageUrl)
+                        .ToList(),
+
+
                     likeCount = r.Post.Likes.Count(),
                     commentCount = r.Post.Comments.Count(),
                     repostCount = r.Post.Reposts.Count(),
