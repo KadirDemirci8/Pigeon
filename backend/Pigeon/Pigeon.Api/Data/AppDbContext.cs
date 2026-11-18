@@ -20,6 +20,8 @@ namespace Pigeon.Api.Data
         public DbSet<Bookmark> Bookmarks { get; set; }
         public DbSet<Repost> Reposts { get; set; }
         public DbSet<CommentLike> CommentLikes { get; set; }
+        public DbSet<PostImage> PostImages { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -141,6 +143,11 @@ namespace Pigeon.Api.Data
                 .HasForeignKey(c => c.ParentCommentId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            modelBuilder.Entity<PostImage>()
+                .HasOne(pi => pi.Post)
+                .WithMany(p => p.Images)
+                .HasForeignKey(pi => pi.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
 
         }
     }

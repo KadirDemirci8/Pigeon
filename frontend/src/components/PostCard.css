@@ -633,3 +633,60 @@
     }
 }
 
+
+.post-images-grid {
+    display: grid;
+    gap: 4px;
+    overflow: hidden;
+    border-radius: 14px;
+    margin: 12px 0;
+}
+
+.post-images-grid img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    object-fit: cover;
+}
+
+.post-images-grid.single-image {
+    grid-template-columns: 1fr;
+}
+
+.post-images-grid.single-image img {
+    max-height: 450px;
+    height: auto;
+    object-fit: contain;
+}
+
+.post-images-grid.two-images,
+.post-images-grid.three-images,
+.post-images-grid.four-images {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.post-images-grid.two-images {
+    height: 280px;
+}
+
+.post-images-grid.three-images,
+.post-images-grid.four-images {
+    height: 360px;
+}
+
+.post-images-grid.three-images img:first-child {
+    grid-row: span 2;
+}
+
+.post-images-grid.many-images {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(180px, 65%);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+}
+
+.post-images-grid.many-images img {
+    height: 280px;
+    scroll-snap-align: start;
+}

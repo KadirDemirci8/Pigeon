@@ -5,6 +5,7 @@ using System.Security.Claims;
 using Pigeon.Api.DTOs;
 using Pigeon.Api.Models;
 using Microsoft.EntityFrameworkCore;
+using SixLabors.ImageSharp;
 
 namespace Pigeon.Api.Controllers
 {
@@ -59,8 +60,232 @@ namespace Pigeon.Api.Controllers
         }
 
 
+        [HttpPost("with-images")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreatePostWithImages(
+            [FromForm] CreatePostWithImagesDto request)
+        {
+            var userId = GetCurrentUserId();
+
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            var content = request.Content?.Trim() ?? string.Empty;
+            var images = request.Images ?? new List<IFormFile>();
+
+
+            var uploadsFolder = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                "uploads",
+                "posts"
+            );
+
+            Directory.CreateDirectory(uploadsFolder);
+
+
+            if (images.Count > 10)
+            {
+                return BadRequest("A post can contain up to 10 images.");
+            }
+
+            const long maxImageSize = 5 * 1024 * 1024;
+
+            var allowedExtensions = new[]
+            {
+                ".jpg",
+                ".jpeg",
+                ".png",
+                ".webp"
+            };
+
+            foreach (var image in images)
+            {
+                if (image.Length == 0 || image.Length > maxImageSize)
+                {
+                    return BadRequest(
+                        "Each image must be between 1 byte and 5 MB.");
+                }
+
+                var extension = Path.GetExtension(image.FileName)
+                    .ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(extension))
+                {
+                    return BadRequest(
+                        "Only JPG, JPEG, PNG and WEBP images are allowed.");
+                }
+
+                var header = new byte[12];
+
+                using var stream = image.OpenReadStream();
+
+                var bytesRead = await stream.ReadAsync(
+                    header.AsMemory(0, header.Length)
+                );
+
+                bool isJpeg = bytesRead >= 3 &&
+                    header[0] == 0xFF &&
+                    header[1] == 0xD8 &&
+                    header[2] == 0xFF;
+
+                bool isPng = bytesRead >= 8 &&
+                    header[0] == 0x89 &&
+                    header[1] == 0x50 &&
+                    header[2] == 0x4E &&
+                    header[3] == 0x47 &&
+                    header[4] == 0x0D &&
+                    header[5] == 0x0A &&
+                    header[6] == 0x1A &&
+                    header[7] == 0x0A;
+
+                bool isWebp = bytesRead >= 12 &&
+                    header[0] == 0x52 &&
+                    header[1] == 0x49 &&
+                    header[2] == 0x46 &&
+                    header[3] == 0x46 &&
+                    header[8] == 0x57 &&
+                    header[9] == 0x45 &&
+                    header[10] == 0x42 &&
+                    header[11] == 0x50;
+
+                bool validFormat = extension switch
+                {
+                    ".jpg" or ".jpeg" => isJpeg,
+                    ".png" => isPng,
+                    ".webp" => isWebp,
+                    _ => false
+                };
+
+                if (!validFormat)
+                {
+                    return BadRequest(
+                        "The file content does not match its image format.");
+                }
+
+                try
+                {
+                    using var imageStream = image.OpenReadStream();
+                    using var decodedImage = await Image.LoadAsync(imageStream);
+
+                    if (decodedImage.Width > 4096 ||
+                        decodedImage.Height > 4096)
+                    {
+                        return BadRequest(
+                            "Image dimensions must not exceed 4096 pixels.");
+                    }
+                }
+                catch (UnknownImageFormatException)
+                {
+                    return BadRequest("Invalid image format.");
+                }
+                catch (InvalidImageContentException)
+                {
+                    return BadRequest("Corrupted image file.");
+                }
+
+
+            }
+
+
+            var savedImageUrls = new List<string>();
+
+
+
+
+            if (string.IsNullOrWhiteSpace(content) && images.Count == 0)
+            {
+                return BadRequest("A post must contain text or at least one image.");
+            }
+
+            var savedFilePaths = new List<string>();
+
+            try
+            {
+
+                foreach (var image in images)
+                {
+                    var extension = Path.GetExtension(image.FileName)
+                        .ToLowerInvariant();
+
+                    var fileName = $"{Guid.NewGuid():N}{extension}";
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+
+                    // Başarısız kopyalama durumunda da dosyayı temizleyebilmek için
+                    savedFilePaths.Add(filePath);
+
+                    await using (var fileStream = new FileStream(
+                        filePath,
+                        FileMode.CreateNew
+                    ))
+                    {
+                        await image.CopyToAsync(fileStream);
+                    }
+
+                    savedImageUrls.Add($"/uploads/posts/{fileName}");
+                }
+
+                var post = new Post
+                {
+                    Content = content,
+                    UserId = userId.Value,
+                    Images = savedImageUrls
+                        .Select((url, index) => new PostImage
+                        {
+                            ImageUrl = url,
+                            DisplayOrder = index
+                        })
+                        .ToList()
+                };
+
+                _context.Posts.Add(post);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Post created successfully!",
+                    postId = post.Id,
+                    imageCount = post.Images.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                foreach (var filePath in savedFilePaths)
+                {
+                    try
+                    {
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            System.IO.File.Delete(filePath);
+                        }
+                    }
+                    catch (IOException cleanupError)
+                    {
+                        Console.Error.WriteLine(
+                            $"Failed to delete uploaded file: {cleanupError.Message}");
+                    }
+                    catch (UnauthorizedAccessException cleanupError)
+                    {
+                        Console.Error.WriteLine(
+                            $"Failed to delete uploaded file: {cleanupError.Message}");
+                    }
+                }
+
+                Console.Error.WriteLine($"Post creation failed: {ex}");
+
+
+                return StatusCode(500, new
+                {
+                    message = "Failed to create post."
+                });
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetPosts([FromQuery] string? q)
+
         {
             var userId = GetCurrentUserId();
 
@@ -86,7 +311,13 @@ namespace Pigeon.Api.Controllers
                     username = p.User.Username,
                     displayName = p.User.DisplayName,
                     profileImageUrl = p.User.ProfileImageUrl,
-                    
+
+                    images = p.Images
+                        .OrderBy(pi => pi.DisplayOrder)
+                        .Select(pi => pi.ImageUrl)
+                        .ToList(),
+
+
 
                     likeCount = p.Likes.Count(),
                     repostCount = p.Reposts.Count(),
@@ -124,6 +355,12 @@ namespace Pigeon.Api.Controllers
                     username = p.User.Username,
                     displayName = p.User.DisplayName,
                     profileImageUrl = p.User.ProfileImageUrl,
+
+                    images = p.Images
+                        .OrderBy(pi => pi.DisplayOrder)
+                        .Select(pi => pi.ImageUrl)
+                        .ToList(),
+
 
                     likeCount = p.Likes.Count(),
                     repostCount = p.Reposts.Count(),

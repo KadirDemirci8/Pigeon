@@ -491,8 +491,32 @@ const handleCommentLike = async (commentId, isLiked) => {
                 )}
             </div>
 
-            <p>{post.content}</p>
-            <div className="post-actions">
+            
+{post.content && <p>{post.content}</p>}
+
+{Array.isArray(post.images) && post.images.length > 0 && (
+    <div
+        className={`post-images-grid ${
+            post.images.length === 1 ? 'single-image' :
+            post.images.length === 2 ? 'two-images' :
+            post.images.length === 3 ? 'three-images' :
+            post.images.length === 4 ? 'four-images' :
+            'many-images'
+        }`}
+    >
+        {post.images.map((imageUrl, index) => (
+            <img
+                key={`${imageUrl}-${index}`}
+                src={`https://localhost:7151${imageUrl}`}
+                alt={`Post image ${index + 1}`}
+                loading="lazy"
+            />
+        ))}
+    </div>
+)}
+
+<div className="post-actions">
+
                 <button
                     type="button"
                     className={`action-like ${isLiked ? 'liked' : ''}`}

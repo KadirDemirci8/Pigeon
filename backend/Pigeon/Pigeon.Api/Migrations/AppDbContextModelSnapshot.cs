@@ -204,6 +204,31 @@ namespace Pigeon.Api.Migrations
                     b.ToTable("Posts");
                 });
 
+            modelBuilder.Entity("Pigeon.Api.Models.PostImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("PostImages");
+                });
+
             modelBuilder.Entity("Pigeon.Api.Models.Repost", b =>
                 {
                     b.Property<int>("Id")
@@ -422,6 +447,17 @@ namespace Pigeon.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Pigeon.Api.Models.PostImage", b =>
+                {
+                    b.HasOne("Pigeon.Api.Models.Post", "Post")
+                        .WithMany("Images")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+                });
+
             modelBuilder.Entity("Pigeon.Api.Models.Repost", b =>
                 {
                     b.HasOne("Pigeon.Api.Models.Post", "Post")
@@ -468,6 +504,8 @@ namespace Pigeon.Api.Migrations
             modelBuilder.Entity("Pigeon.Api.Models.Post", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("Images");
 
                     b.Navigation("Likes");
 

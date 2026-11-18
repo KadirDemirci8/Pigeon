@@ -1,4 +1,5 @@
-﻿namespace Pigeon.Api.Models
+﻿
+namespace Pigeon.Api.Models
 {
     public class Post
     {
@@ -11,8 +12,13 @@
         public int UserId { get; set; }
 
         public User User { get; set; } = null!;
+
         public ICollection<Like> Likes { get; set; } = new List<Like>();
+
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
         public ICollection<Repost> Reposts { get; set; } = new List<Repost>();
+
+        public ICollection<PostImage> Images { get; set; } = new List<PostImage>();
     }
 }
