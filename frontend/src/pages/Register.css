@@ -1,0 +1,371 @@
+/* Pigeon V1 Register — preserved artwork with selectable real left text and interactive registration card. */
+.pigeon-register-page, .pigeon-register-page * { box-sizing: border-box; }
+.pigeon-register-page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    overflow: hidden;
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(125deg,#ce79c4 0%,#eb95c2 48%,#ffb5a9 100%);
+    font-family: Arial, Helvetica, sans-serif;
+}
+.pigeon-register-page::before {
+    content: '';
+    position: absolute;
+    inset: -90px;
+    z-index: -1;
+    pointer-events: none;
+    background: url('/pigeon-register-reference.png') center / cover no-repeat;
+    filter: blur(85px) saturate(1.05);
+    transform: scale(1.18);
+}
+.pigeon-register-artwork {
+    position: relative;
+    flex: 0 0 auto;
+    width: min(calc(100vw - 20px), calc((100vh - 20px) * 1448 / 1086));
+    max-width: 1448px;
+    aspect-ratio: 1448 / 1086;
+    container-type: inline-size;
+    filter: drop-shadow(0 10px 22px rgba(83,22,74,.10));
+}
+.pigeon-register-reference {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-mask-image: linear-gradient(to right,transparent 0%,black 2.4%,black 97.6%,transparent 100%),linear-gradient(to bottom,transparent 0%,black 4%,black 96%,transparent 100%);
+    mask-image: linear-gradient(to right,transparent 0%,black 2.4%,black 97.6%,transparent 100%),linear-gradient(to bottom,transparent 0%,black 4%,black 96%,transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+        clip-path: inset(6.5% 3.4% 15% 3.4% round 3cqw);
+
+}
+/* Real, user-selectable copy aligned to the original design's copy area. */
+.pigeon-register-hero {
+    position: absolute;
+    z-index: 2;
+    left: 10.65%;
+    top: 35.0%;
+    width: 39%;
+    color: #fff;
+    user-select: text;
+    -webkit-user-select: text;
+}
+.pigeon-register-hero h1 {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0 0 1.45cqw;
+    font-size: 3.77cqw;
+    line-height: 1.13;
+    font-weight: 800;
+    letter-spacing: -.09cqw;
+    color: #fff;
+}
+.pigeon-register-hero h1 span { display: block; color: #fff1b4; }
+.pigeon-register-hero p {
+    margin: 0;
+    max-width: 38cqw;
+    font-size: 1.53cqw;
+    line-height: 1.45;
+    color: #fff8fb;
+}
+/* Overlay the baked-in illustration of the form; the live form is the only interactive form. */
+.pigeon-register-artwork > .pigeon-register-card {
+    position: absolute;
+    z-index: 3;
+    left: 55.5%;
+    top: 10%;
+    width: 39%;
+    height: 72.5%;
+    display: flex;
+    flex-direction: column;
+    padding: 2.4cqw 2.15cqw 2.0cqw;
+    border: 1px solid rgba(255,255,255,.97);
+    border-radius: 4.1cqw;
+    background: linear-gradient(155deg,#fff3fa 0%,#fceaf5 52%,#ffeaf1 100%);
+    color: #36142c;
+    box-shadow: 0 .5cqw 1.6cqw rgba(106,32,80,.14);
+    overflow: hidden;
+}
+.pigeon-register-card-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 0 0 auto;
+    margin-bottom: 1.4cqw;
+}
+.pigeon-register-card .register-card-logo {
+    width: 14.5cqw;
+    height: 4.6cqw;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+    margin-bottom: 1.2cqw;
+}
+.pigeon-register-card-heading h2 {
+    font-size: 2.65cqw;
+    font-weight: 800;
+    letter-spacing: -.07cqw;
+    color: #351029;
+    line-height: 1.1;
+    margin: 0 0 .75cqw;
+}
+.pigeon-register-card-heading > p {
+    margin: 0;
+    font-size: 1.18cqw;
+    color: #66455c;
+    line-height: 1.3;
+}
+.register-live-form { display:flex; flex-direction:column; gap: .7cqw; width:100%; }
+.register-input-row { display:flex; flex-direction:column; gap:.4cqw; }
+.register-input-row label { font-size: 1.15cqw; font-weight:700; color:#35162b; }
+.register-input-row > input,
+.register-password-field {
+    display:block;
+    width:100%;
+    min-height: 3.85cqw;
+    background:#fff9fc;
+    color:#381d31;
+    border:1px solid #e7bfd8;
+    border-radius:1.2cqw;
+    outline:none;
+    font: inherit;
+    font-size:1.13cqw;
+}
+.register-input-row > input { padding: 0 1.15cqw; }
+.register-input-row > input:focus,
+.register-password-field:focus-within { border-color:#e83b83; box-shadow:0 0 0 2px rgba(232,59,131,.14); }
+.register-password-field { display:flex; align-items:center; overflow:hidden; }
+.register-password-field input {
+    min-width:0;
+    flex:1;
+    width:100%;
+    height:100%;
+    min-height:3.7cqw;
+    background:transparent;
+    color:#381d31;
+    border:0;
+    outline:0;
+    padding:0 1.1cqw;
+    font:inherit;
+    font-size:1.13cqw;
+}
+.register-input-row input::placeholder { color:#8c7082; opacity:1; }
+.register-password-eye {
+    display:flex; align-items:center; justify-content:center;
+    flex:0 0 3.4cqw; height:3.75cqw;
+    background:transparent; border:0; color:#694059;
+    cursor:pointer;
+}
+.register-password-eye svg { width:1.45cqw; height:1.45cqw; }
+.register-primary-button {
+    min-height:4.7cqw;
+    margin-top: .8cqw;
+    border:0;
+    border-radius:3cqw;
+    background:linear-gradient(105deg,#ff9543 0%,#ff596d 48%,#ee197e 100%);
+    box-shadow:0 .55cqw 1.25cqw rgba(237,35,121,.18);
+    color:white;
+    cursor:pointer;
+    font-weight:750;
+    font-size:1.47cqw;
+}
+.register-primary-button:hover:not(:disabled) { filter:brightness(1.04); }
+.register-primary-button:disabled { cursor:wait; opacity:.7; }
+.register-feedback { margin:.3cqw 0 0; font-size:1cqw; color:#a5154a; text-align:center; }
+.register-login-link {
+    margin:auto 0 0;
+    padding-top:.9cqw;
+    text-align:center;
+    color:#604359;
+    font-size:1.15cqw;
+}
+.register-login-link a { color:#ee1e79; text-decoration:none; font-weight:700; }
+.register-login-link a:hover { text-decoration:underline; }
+.pigeon-register-mobile { display:none; }
+@media (max-width: 800px) {
+    .pigeon-register-page { min-height:100dvh; padding:24px 14px 34px; align-items:flex-start; }
+    .pigeon-register-artwork { display:none; }
+    .pigeon-register-mobile { display:block; width:min(100%,490px); margin:0 auto; }
+    .pigeon-register-mobile-hero {
+        text-align:center; color:white; border-radius:23px; padding:28px 14px;
+        
+background: linear-gradient(
+    135deg,
+    #893477 0%,
+    #cf5998 55%,
+    #fa9a97 100%
+);
+
+        margin-bottom:18px;
+    }
+    .pigeon-register-mobile-hero img { display:block; width:155px; max-width:70%; margin:auto; mix-blend-mode:multiply; }
+    .pigeon-register-mobile-hero h1 { font-size:clamp(25px,7vw,35px); line-height:1.1; margin:22px auto 0; text-shadow:0 2px 12px rgba(75,20,71,.5); }
+    .pigeon-register-mobile-hero h1 span { display:block; color:#ffe6ac; }
+    .pigeon-register-mobile-card { display:flex; flex-direction:column; padding:27px 23px 25px; border-radius:28px; background:#fff1f7; border:1px solid white; box-shadow:0 13px 35px rgba(95,22,79,.14); }
+    .pigeon-register-mobile-card .pigeon-register-card-heading { margin-bottom:22px; }
+    .pigeon-register-mobile-card .register-card-logo { width:165px; height:57px; object-fit:contain; margin-bottom:12px; mix-blend-mode:multiply; }
+    .pigeon-register-mobile-card .pigeon-register-card-heading h2 { font-size:31px; letter-spacing:-.5px; margin-bottom:8px; }
+    .pigeon-register-mobile-card .pigeon-register-card-heading p { font-size:14px; }
+    .pigeon-register-mobile-card .register-live-form { gap:13px; }
+    .pigeon-register-mobile-card .register-input-row { gap:6px; }
+    .pigeon-register-mobile-card .register-input-row label { font-size:14px; }
+    .pigeon-register-mobile-card .register-input-row > input,
+    .pigeon-register-mobile-card .register-password-field { min-height:48px; border-radius:13px; font-size:14px; }
+    .pigeon-register-mobile-card .register-input-row > input { padding:0 14px; }
+    .pigeon-register-mobile-card .register-password-field input { min-height:46px; font-size:14px; padding:0 14px; }
+    .pigeon-register-mobile-card .register-password-eye { flex-basis:44px; height:46px; }
+    .pigeon-register-mobile-card .register-password-eye svg { width:20px; height:20px; }
+    .pigeon-register-mobile-card .register-primary-button { min-height:52px; margin-top:12px; border-radius:26px; font-size:16px; }
+    .pigeon-register-mobile-card .register-feedback { font-size:13px; }
+    .pigeon-register-mobile-card .register-login-link { padding-top:26px; margin:0; font-size:14px; }
+}
+
+/* REGISTER BACKGROUND COLOR BALANCE */
+
+.pigeon-register-page {
+    background: linear-gradient(
+        115deg,
+        #b65b94 0%,
+        #ca699e 38%,
+        #db82a9 68%,
+        #eea4b9 100%
+    );
+}
+
+.pigeon-register-page::before {
+    background: linear-gradient(
+        110deg,
+        #a74f8a 0%,
+        #c5689d 35%,
+        #d980aa 70%,
+        #efa4b9 100%
+    );
+    filter: blur(65px);
+    transform: scale(1.08);
+}
+
+/* Register validation message */
+
+.pigeon-register-card .register-error,
+.pigeon-register-card .pigeon-register-error {
+    position: absolute;
+    top: 4%;
+    left: 12%;
+    right: 12%;
+    z-index: 10;
+    padding: 10px;
+    border-radius: 12px;
+    background: #fff0f4;
+    color: #ad194a;
+    text-align: center;
+    font-size: 13px;
+}
+
+/* MOBILE REGISTER FIX */
+
+@media (max-width: 800px) {
+    .pigeon-register-artwork {
+        display: none !important;
+    }
+
+    .pigeon-register-mobile {
+        display: block;
+    }
+}
+
+/* MOBILE REGISTER CARD SPACING */
+
+@media (max-width: 800px) {
+    .pigeon-register-mobile-card .pigeon-register-card-heading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 22px;
+    }
+
+    .pigeon-register-mobile-card .register-card-logo {
+        margin: 0 0 8px;
+    }
+
+    .pigeon-register-mobile-card .pigeon-register-card-heading h2 {
+        margin: 0;
+    }
+
+    .pigeon-register-mobile-card .pigeon-register-card-heading p {
+        margin: 0;
+    }
+}
+
+/* MOBILE REGISTER SCENERY */
+
+@media (max-width: 800px) {
+    .pigeon-register-mobile-hero {
+        min-height: 190px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background-image:
+            linear-gradient(
+                rgba(75, 20, 70, 0.12),
+                rgba(75, 20, 70, 0.35)
+            ),
+            url('/pigeon-register-reference.png');
+
+        background-size: 100% 100%, 240% auto;
+        background-position: center, left top;
+        background-repeat: no-repeat;
+    }
+
+    .pigeon-register-mobile-hero h1 {
+        position: relative;
+        z-index: 1;
+        margin: 0;
+    }
+}
+
+/* MOBILE HERO — FINAL FIX */
+
+@media (max-width: 800px) {
+    .pigeon-register-mobile-hero {
+        position: relative;
+        min-height: 190px;
+        padding: 20px;
+        overflow: hidden;
+        isolation: isolate;
+
+        background-image:
+            linear-gradient(
+                rgba(80, 25, 75, 0.15),
+                rgba(80, 25, 75, 0.35)
+            ),
+            url('/pigeon-register-reference.png');
+
+        background-size:
+            cover,
+            auto 650px;
+
+        background-position:
+            center,
+            left -35px top -85px;
+
+        background-repeat: no-repeat;
+        border-radius: 23px;
+    }
+
+    .pigeon-register-mobile-hero h1 {
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.15;
+        text-shadow: 0 2px 10px rgba(55, 15, 50, 0.55);
+    }
+}
