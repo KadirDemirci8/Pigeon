@@ -14,7 +14,7 @@ namespace Pigeon.Api.Controllers
     [Authorize]
     public class PostsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly AppDbContext _context; 
 
         public PostsController(AppDbContext context)
         {
@@ -347,7 +347,7 @@ namespace Pigeon.Api.Controllers
             return Ok(posts);
         }
 
-
+        [AllowAnonymous]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetPost(int id)
         {

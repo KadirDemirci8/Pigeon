@@ -238,3 +238,33 @@
     font-weight: 400;
     line-height: 1.5;
 }
+
+
+.explore-search {
+    position: relative;
+}
+
+.explore-search input {
+    min-width: 0;
+    padding-right: 42px;
+}
+
+.explore-search-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #8b6973;
+    cursor: pointer;
+}
+
+.explore-search-clear:hover {
+    background: rgba(238, 103, 149, 0.12);
+    color: #ee6795;
+}

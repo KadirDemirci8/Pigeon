@@ -1,14 +1,35 @@
 import './PostCard.css'
-import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Send, ChevronDown, CornerUpLeft, MoreHorizontal, ChevronLeft, ChevronRight, Pencil} from 'lucide-react'
+import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Send, ChevronDown, CornerUpLeft, MoreHorizontal, ChevronLeft, ChevronRight, Pencil, Share2} from 'lucide-react'
 import { useState, useEffect, useMemo   } from 'react'
 import axios from 'axios'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 
 
 function PostCard({ post, currentUserId, currentUser, onPostDeleted, onBookmarkRemoved, onRepostRemoved, repostedBy, autoOpenComments = false, targetCommentId = null}) {
 
     const isOwner = Number(post.userId) === Number(currentUserId)
+
+const isAuthenticated = Boolean(sessionStorage.getItem('accessToken'))
+
+
+const navigate = useNavigate()
+
+const requireLogin = () => {
+    if (isAuthenticated) return true
+
+    navigate('/login', {
+        state: {
+            from: {
+                pathname: `/posts/${post.id}`,
+                search: '',
+                hash: ''
+            }
+        }
+    })
+
+    return false
+}
 
 
 const handleSaveImages = async () => {
@@ -148,6 +169,8 @@ const handleSaveEdit = async () => {
         }
 
         const handleLike = async () => {
+
+            if (!requireLogin()) return
     try {
         const token = sessionStorage.getItem('accessToken')
 
@@ -186,8 +209,12 @@ const handleSaveEdit = async () => {
 }
 
 
+
 const handleBookmark = async () => {
+    if (!requireLogin()) return
+
     if (bookmarkLoading) return
+
 
     setBookmarkLoading(true)
 
@@ -228,8 +255,12 @@ const handleBookmark = async () => {
 }
 
 
+
 const handleRepost = async () => {
+    if (!requireLogin()) return
+
     if (repostLoading) return
+
 
     setRepostLoading(true)
 
@@ -303,6 +334,19 @@ const handleRepost = async () => {
     const [isSavingImages, setIsSavingImages] = useState(false)
     const [displayImages, setDisplayImages] = useState(post.images ?? [])
     const [displayImageDetails, setDisplayImageDetails] = useState(post.imageDetails ?? [])
+    const [linkCopied, setLinkCopied] = useState(false)
+
+
+useEffect(() => {
+    if (!linkCopied) return
+
+    const timeoutId = setTimeout(() => {
+        setLinkCopied(false)
+    }, 2000)
+
+    return () => clearTimeout(timeoutId)
+}, [linkCopied])
+
 
 const newEditImagePreviews = useMemo(
     () => newEditImages.map(file => ({
@@ -405,8 +449,12 @@ useEffect(() => {
     setRepostCount(post.repostCount ?? 0)
 }, [post.isReposted, post.repostCount, post.id])
 
-    const handleComment = async () => {
-                if (!commentContent.trim()) return
+    
+const handleComment = async () => {
+    if (!requireLogin()) return
+
+    if (!commentContent.trim()) return
+
 
                 try {
                     const token = sessionStorage.getItem('accessToken')
@@ -513,8 +561,12 @@ useEffect(() => {
 
 
 
+
 const handleReply = async () => {
+    if (!requireLogin()) return
+
     if (!replyContent.trim() || !replyToComment) return
+
 
     try {
         const token = sessionStorage.getItem('accessToken')
@@ -555,10 +607,14 @@ const handleReply = async () => {
 
 
     
+
 const handleDeleteComment = async (commentId) => {
+    if (!requireLogin()) return
+
     if (!window.confirm('Delete this comment and its replies?')) return
 
     try {
+
         await axios.delete(
             `https://localhost:7151/api/posts/comments/${commentId}`,
             {
@@ -586,7 +642,11 @@ const handleDeleteComment = async (commentId) => {
 }
 
 
+
 const handleCommentLike = async (commentId, isLiked) => {
+    if (!requireLogin()) return
+
+
     try {
         const token = sessionStorage.getItem('accessToken')
 
@@ -952,6 +1012,37 @@ return (
                     />
                 </button>
 
+
+                
+                <div className="post-share-wrapper">
+                    <button
+                        type="button"
+                        className="action-share"
+                        aria-label="Copy post link"
+                        onClick={async () => {
+                            const postUrl = `${window.location.origin}/posts/${post.id}`
+
+                            try {
+                                await navigator.clipboard.writeText(postUrl)
+                                setLinkCopied(true)
+                            } catch (error) {
+                                console.error('Failed to copy post link:', error)
+                                alert('Could not copy post link.')
+                            }
+                        }}
+                    >
+                        <Share2 size={19} />
+                    </button>
+
+                    {linkCopied && (
+                        <span className="post-link-copied" role="status">
+                            Link copied!
+                        </span>
+                    )}
+                </div>
+
+
+
             </div>
                             {isCommentOpen && (
             <div className="comment-section">
@@ -1172,11 +1263,31 @@ return (
                 )}
             </div>
 
-    <textarea
+    
+            <textarea
                 placeholder="Write a comment..."
+                onFocus={(e) => {
+                    if (!isAuthenticated) {
+                        e.target.blur()
+                        requireLogin()
+                    }
+                }}
                 value={commentContent}
                 onChange={(e) => setCommentContent(e.target.value)}
             />
+
+            <textarea
+                placeholder="Write a comment..."
+                onFocus={(e) => {
+                    if (!isAuthenticated) {
+                        e.target.blur()
+                        requireLogin()
+                    }
+                }}
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.target.value)}
+            />
+
 
             <button
                 type="button"

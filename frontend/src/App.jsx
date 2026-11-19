@@ -71,14 +71,12 @@ function App() {
             />
 
 
+            
             <Route
                 path="/posts/:id"
-                element={
-                    <ProtectedRoute>
-                        <PostDetails />
-                    </ProtectedRoute>
-                }
+                element={<PostDetails />}
             />
+
 
             
             <Route

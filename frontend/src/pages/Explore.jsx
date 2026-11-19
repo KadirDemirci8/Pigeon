@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react'
-import { Search, Users, MessageCircle } from 'lucide-react'
+import { Search, Users, MessageCircle, X } from 'lucide-react'
 import MainLayout from '../components/MainLayout'
 import './Explore.css'
 import axios from 'axios'
@@ -24,8 +24,10 @@ function Explore() {
 
 
 
+
 useEffect(() => {
     let cancelled = false
+    const controller = new AbortController()
 
     const fetchUsers = async () => {
         setUsersLoading(true)
@@ -35,49 +37,47 @@ useEffect(() => {
             const response = await axios.get(
                 'https://localhost:7151/api/users/search',
                 {
-                    
-                params: {
-                    q: search.trim(),
-                    limit: search.trim() || activeTab === 'people' ? 20 : 4
-                }
-
+                    params: {
+                        q: search.trim(),
+                        limit: search.trim() || activeTab === 'people' ? 20 : 4
+                    },
+                    signal: controller.signal
                 }
             )
 
             const token = sessionStorage.getItem('accessToken')
             const currentUserId = Number(sessionStorage.getItem('userId'))
 
+            const filteredUsers = response.data.filter(
+                user => user.id !== currentUserId
+            )
+
             const statuses = {}
 
-            await Promise.all(
-                response.data
-                    .filter(user => user.id !== currentUserId)
-                    .map(async user => {
+            if (token) {
+                await Promise.all(
+                    filteredUsers.map(async user => {
                         const statusResponse = await axios.get(
                             `https://localhost:7151/api/follows/${user.id}/status`,
                             {
                                 headers: {
                                     Authorization: `Bearer ${token}`
-                                }
+                                },
+                                signal: controller.signal
                             }
                         )
 
                         statuses[user.id] = statusResponse.data.isFollowing
                     })
-            )
+                )
+            }
 
             if (!cancelled) {
-                
-                setUsers(
-                    response.data.filter(
-                        user => user.id !== currentUserId
-                    )
-                )
-
+                setUsers(filteredUsers)
                 setFollowStatuses(statuses)
             }
         } catch (error) {
-            if (!cancelled) {
+            if (!cancelled && !axios.isCancel(error)) {
                 console.error('Failed to search users:', error)
                 setUsersError('Could not load users.')
             }
@@ -93,12 +93,16 @@ useEffect(() => {
     return () => {
         cancelled = true
         clearTimeout(timeoutId)
+        controller.abort()
     }
 }, [search, activeTab])
 
 
+
+
 useEffect(() => {
     let cancelled = false
+    const controller = new AbortController()
 
     const fetchPosts = async () => {
         setPostsLoading(true)
@@ -113,9 +117,10 @@ useEffect(() => {
                     params: {
                         q: search.trim()
                     },
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                    headers: token
+                        ? { Authorization: `Bearer ${token}` }
+                        : {},
+                    signal: controller.signal
                 }
             )
 
@@ -123,7 +128,7 @@ useEffect(() => {
                 setPosts(response.data)
             }
         } catch (error) {
-            if (!cancelled) {
+            if (!cancelled && !axios.isCancel(error)) {
                 console.error('Failed to load posts:', error)
                 setPostsError('Could not load posts.')
             }
@@ -139,8 +144,10 @@ useEffect(() => {
     return () => {
         cancelled = true
         clearTimeout(timeoutId)
+        controller.abort()
     }
 }, [search])
+
 
 
 useEffect(() => {
@@ -213,15 +220,29 @@ const handleFollow = async (userId) => {
                 <h1>Explore</h1>
                 <p>Discover people and posts on Pigeon.</p>
 
-                <div className="explore-search">
-                    <Search size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search people or posts..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+               
+            <div className="explore-search">
+                <Search size={20} />
+
+                <input
+                    type="text"
+                    placeholder="Search people or posts..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                />
+
+                {search.length > 0 && (
+                    <button
+                        type="button"
+                        className="explore-search-clear"
+                        onClick={() => setSearch('')}
+                        aria-label="Clear search"
+                    >
+                        <X size={17} />
+                    </button>
+                )}
+            </div>
+
 
                 <div className="explore-tabs">
                     <button

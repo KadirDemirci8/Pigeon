@@ -25,14 +25,18 @@ function PostDetails() {
             try {
                 const token = sessionStorage.getItem('accessToken')
 
-                const response = await axios.get(
-                    `https://localhost:7151/api/posts/${id}`,
-                    {
+                
+            const response = await axios.get(
+                `https://localhost:7151/api/posts/${id}`,
+                token
+                    ? {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
                     }
-                )
+                    : {}
+            )
+
 
                 if (!cancelled) {
                     setPost(response.data)
