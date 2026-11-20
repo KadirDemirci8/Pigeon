@@ -1,11 +1,106 @@
+
+import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Search } from 'lucide-react'
+import axios from 'axios'
 import './RightPanel.css'
-import { useState } from 'react'
+
+const API_URL = 'https://localhost:7151'
 
 function RightPanel() {
-    
-    const [isFollowingAlex, setIsFollowingAlex] = useState(false)
-    const [isFollowingElif, setIsFollowingElif] = useState(false)
+    const [trends, setTrends] = useState([])
+    const [trendsLoading, setTrendsLoading] = useState(true)
+    const [suggestions, setSuggestions] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState('')
+    const [followingId, setFollowingId] = useState(null)
+
+    const fetchSuggestions = useCallback(async () => {
+        try {
+            setError('')
+
+            const token = sessionStorage.getItem('accessToken')
+
+            const response = await axios.get(
+                `${API_URL}/api/users/suggestions`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setSuggestions(response.data)
+        } catch (err) {
+            console.error('Failed to load suggestions:', err)
+            setError('Could not load suggestions.')
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
+    useEffect(() => {
+        fetchSuggestions()
+    }, [fetchSuggestions])
+
+
+useEffect(() => {
+    const fetchTrends = async () => {
+        try {
+            const token = sessionStorage.getItem('accessToken')
+
+            const response = await axios.get(
+                `${API_URL}/api/posts/trending`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setTrends(response.data)
+        } catch (error) {
+            console.error('Failed to load trends:', error)
+        } finally {
+            setTrendsLoading(false)
+        }
+    }
+
+    fetchTrends()
+}, [])
+
+
+    const handleFollow = async (userId) => {
+        if (followingId !== null) return
+
+        setFollowingId(userId)
+
+        try {
+            const token = sessionStorage.getItem('accessToken')
+
+            await axios.post(
+                `${API_URL}/api/follows/${userId}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+
+            setSuggestions(prev =>
+                prev.filter(user => user.id !== userId)
+            )
+
+            await fetchSuggestions()
+        } catch (err) {
+            console.error('Failed to follow user:', err)
+            setError('Could not follow user. Please try again.')
+        } finally {
+            setFollowingId(null)
+        }
+    }
+
     return (
         <div className="right-panel">
             <div className="search-box">
@@ -16,64 +111,78 @@ function RightPanel() {
                 />
             </div>
 
+            
             <section className="trending-section">
                 <h3>Trending</h3>
 
-                <div className="trend-item">
-                    <span>Technology · Trending</span>
-                    <strong>#ArtificialIntelligence</strong>
-                    <small>2.4K posts</small>
-                </div>
-
-                <div className="trend-item">
-                    <span>Development · Trending</span>
-                    <strong>#BuildInPublic</strong>
-                    <small>1.2K posts</small>
-                </div>
-
-                <div className="trend-item">
-                    <span>Lifestyle · Trending</span>
-                    <strong>#CoffeeTime</strong>
-                    <small>856 posts</small>
-                </div>
+                {trendsLoading ? (
+                    <p>Loading trends...</p>
+                ) : trends.length === 0 ? (
+                    <p>No trending topics yet.</p>
+                ) : (
+                    trends.map(trend => (
+                        <div className="trend-item" key={trend.hashtag}>
+                            <span>Trending · Last 48 hours</span>
+                            <strong>{trend.hashtag}</strong>
+                            <small>
+                                {trend.postCount} {trend.postCount === 1 ? 'post' : 'posts'}
+                            </small>
+                        </div>
+                    ))
+                )}
             </section>
+
 
             <section className="follow-section">
                 <h3>Who to follow</h3>
 
-                <div className="follow-user">
-                    <div className="follow-avatar">A</div>
+                {loading && (
+                    <p>Loading suggestions...</p>
+                )}
 
-                    <div className="follow-info">
-                        <strong>Alex Carter</strong>
-                        <span>@alexcarter</span>
+                {!loading && error && (
+                    <p className="follow-error">{error}</p>
+                )}
+
+                {!loading && suggestions.length === 0 && !error && (
+                    <p>No new users to suggest yet.</p>
+                )}
+
+                {!loading && suggestions.map(user => (
+                    <div className="follow-user" key={user.id}>
+                        <Link
+                            to={`/profile/${user.username}`}
+                            className="follow-avatar"
+                            aria-label={`View ${user.displayName}'s profile`}
+                        >
+                            {user.profileImageUrl ? (
+                                <img
+                                    src={`${API_URL}${user.profileImageUrl}`}
+                                    alt={user.displayName}
+                                />
+                            ) : (
+                                user.displayName?.charAt(0).toUpperCase() || '?'
+                            )}
+                        </Link>
+
+                        <div className="follow-info">
+                            <Link to={`/profile/${user.username}`}>
+                                <strong>{user.displayName}</strong>
+                                <span>@{user.username}</span>
+                            </Link>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => handleFollow(user.id)}
+                            disabled={followingId !== null}
+                        >
+                            {followingId === user.id
+                                ? 'Following...'
+                                : 'Follow'}
+                        </button>
                     </div>
-
-                    <button
-                        type="button"
-                        className={isFollowingAlex ? 'following' : ''}
-                        onClick={() => setIsFollowingAlex(!isFollowingAlex)}
-                    >
-                        {isFollowingAlex ? 'Following' : 'Follow'}
-                    </button>
-                </div>
-
-                <div className="follow-user">
-                    <div className="follow-avatar">E</div>
-
-                    <div className="follow-info">
-                        <strong>Elif Kaya</strong>
-                        <span>@elifkaya</span>
-                    </div>
-
-                    <button
-                        type="button"
-                        className={isFollowingElif ? 'following' : ''}
-                        onClick={() => setIsFollowingElif(!isFollowingElif)}
-                    >
-                        {isFollowingElif ? 'Following' : 'Follow'}
-                    </button>
-                </div>
+                ))}
             </section>
         </div>
     )

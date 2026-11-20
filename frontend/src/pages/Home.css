@@ -24,3 +24,88 @@
 .feed-tabs button:hover {
     background: #fff5f1;
 }
+
+
+/* PIGEON POST COMPOSER MODAL */
+
+.pigeon-post-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(26, 15, 31, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.pigeon-post-modal {
+    width: min(100%, 620px);
+    max-height: min(90dvh, 760px);
+    overflow-y: auto;
+    background: #fff8fa;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: 24px;
+    box-shadow: 0 24px 80px rgba(44, 18, 39, 0.3);
+}
+
+.pigeon-post-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f0dde6;
+}
+
+.pigeon-post-modal-header h2 {
+    margin: 0;
+    color: #382434;
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.pigeon-post-modal-close {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: #fce6ed;
+    color: #7e4663;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.pigeon-post-modal-close:hover {
+    background: #f6cbdc;
+}
+
+.pigeon-post-modal-content {
+    padding: 14px 20px 24px;
+}
+
+@media (max-width: 600px) {
+    .pigeon-post-modal-overlay {
+        padding: 12px;
+        align-items: center;
+    }
+
+    .pigeon-post-modal {
+        width: 100%;
+        max-height: 88dvh;
+        border-radius: 20px;
+    }
+
+    .pigeon-post-modal-header {
+        padding: 16px 18px;
+    }
+
+    .pigeon-post-modal-content {
+        padding: 10px 14px 18px;
+    }
+}

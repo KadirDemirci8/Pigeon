@@ -111,3 +111,126 @@
         padding-bottom: 85px;
     }
 }
+
+
+/* PIGEON V1 — SOFT BLUSH BACKGROUND */
+
+.main-layout {
+    background:
+        radial-gradient(
+            ellipse 420px 380px at 2% 82%,
+            rgba(255, 174, 199, 0.55),
+            transparent 85%
+        ),
+        radial-gradient(
+            ellipse 500px 450px at 98% 12%,
+            rgba(255, 169, 192, 0.48),
+            transparent 85%
+        ),
+        radial-gradient(
+            ellipse 530px 410px at 60% 37%,
+            rgba(255, 198, 218, 0.43),
+            transparent 85%
+        ),
+        linear-gradient(
+            115deg,
+            #fff2ed 0%,
+            #fff8f8 36%,
+            #ffe9ef 72%,
+            #ffdce7 100%
+        );
+}
+
+.left-sidebar,
+.main-content,
+.right-sidebar {
+    background: transparent;
+}
+
+.left-sidebar {
+    border-right-color: rgba(237, 171, 190, 0.35);
+}
+
+.right-sidebar {
+    border-left-color: rgba(237, 171, 190, 0.35);
+}
+
+/* White cards with subtle pink elevation */
+
+.post-card,
+.trending-section,
+.follow-section {
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow:
+        0 8px 24px rgba(191, 83, 120, 0.09),
+        0 2px 5px rgba(191, 83, 120, 0.04);
+}
+
+/* FULL SCREEN PIGEON BACKGROUND */
+
+body {
+    background:
+        radial-gradient(
+            ellipse 420px 380px at 2% 82%,
+            rgba(255, 174, 199, 0.55),
+            transparent 85%
+        ),
+        radial-gradient(
+            ellipse 500px 450px at 98% 12%,
+            rgba(255, 169, 192, 0.48),
+            transparent 85%
+        ),
+        radial-gradient(
+            ellipse 530px 410px at 60% 37%,
+            rgba(255, 198, 218, 0.43),
+            transparent 85%
+        ),
+        linear-gradient(
+            115deg,
+            #fff2ed 0%,
+            #fff8f8 36%,
+            #ffe9ef 72%,
+            #ffdce7 100%
+        );
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+.main-layout {
+    background: transparent;
+}
+
+
+.pigeon-logo {
+    mix-blend-mode: multiply;
+}
+/* SOFT DECORATIVE CORNER */
+
+@media (min-width: 601px) {
+    .main-layout::before {
+        content: "";
+        position: fixed;
+        bottom: -130px;
+        left: -180px;
+        width: 520px;
+        height: 390px;
+        border-radius: 50%;
+        background: linear-gradient(
+            135deg,
+            rgba(255, 161, 190, 0.32),
+            rgba(255, 205, 217, 0.08)
+        );
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .main-layout > * {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+.pigeon-logo {
+    mix-blend-mode: darken;
+    filter: contrast(1.08);
+}

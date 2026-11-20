@@ -61,6 +61,38 @@ namespace Pigeon.Api.Controllers
         }
 
 
+        [Authorize]
+        [HttpGet("suggestions")]
+        public async Task<IActionResult> GetSuggestedUsers()
+        {
+            var userIdClaim = User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdClaim, out int currentUserId))
+                return Unauthorized();
+
+            var suggestions = await _context.Users
+                .AsNoTracking()
+                .Where(u =>
+                    u.Id != currentUserId &&
+                    !_context.UserFollows.Any(f =>
+                        f.FollowerId == currentUserId &&
+                        f.FollowingId == u.Id))
+                .OrderByDescending(u => u.Id)
+                .Take(3)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Username,
+                    u.DisplayName,
+                    u.ProfileImageUrl
+                })
+                .ToListAsync();
+
+            return Ok(suggestions);
+        }
+
+
         [HttpGet("{username}")]
         public async Task<ActionResult<UserProfileDto>> GetProfile(string username)
         {

@@ -223,12 +223,39 @@ const fetchFollowUsers = async (type) => {
 
 
 
-const openFollowModal = (type) => {
+
+const openFollowModal = async (type) => {
+    if (!profile) return
+
     setFollowSearch('')
     setFollowActionError('')
     setFollowModal(type)
+
+    // Güncel takipçi ve takip edilen sayılarını al
+    try {
+        const token = sessionStorage.getItem('accessToken')
+
+        const response = await axios.get(
+            `https://localhost:7151/api/follows/${profile.id}/status`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        )
+
+        setFollowersCount(response.data.followersCount)
+        setFollowingCount(response.data.followingCount)
+        setIsFollowing(response.data.isFollowing)
+
+    } catch (error) {
+        console.error('Failed to refresh follow counts:', error)
+    }
+
+    // Modal listesini güncel verilerle doldur
     fetchFollowUsers(type)
 }
+
 
 
 

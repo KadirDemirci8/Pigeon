@@ -6,6 +6,7 @@ using Pigeon.Api.DTOs;
 using Pigeon.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
+using System.Text.RegularExpressions;
 
 namespace Pigeon.Api.Controllers
 {
@@ -282,6 +283,45 @@ namespace Pigeon.Api.Controllers
                 });
             }
         }
+
+
+        [HttpGet("trending")]
+        public async Task<IActionResult> GetTrending()
+        {
+            var since = DateTime.UtcNow.AddHours(-48);
+
+            // Son 7 günün hashtag içeren gönderileri
+            var contents = await _context.Posts
+                .AsNoTracking()
+                .Where(p =>
+                    p.CreatedAt >= since &&
+                    p.Content != null &&
+                    p.Content.Contains("#"))
+                .Select(p => p.Content)
+                .ToListAsync();
+
+            var hashtags = contents
+                .SelectMany(content =>
+                    Regex.Matches(
+                        content ?? "",
+                        @"(?<![\p{L}\p{N}_])#[\p{L}\p{N}_]+"
+                    )
+                    .Select(match => match.Value)
+                    .Distinct(StringComparer.OrdinalIgnoreCase))
+                .GroupBy(tag => tag, StringComparer.OrdinalIgnoreCase)
+                .Select(group => new
+                {
+                    hashtag = group.First(),
+                    postCount = group.Count()
+                })
+                .OrderByDescending(tag => tag.postCount)
+                .ThenBy(tag => tag.hashtag)
+                .Take(3)
+                .ToList();
+
+            return Ok(hashtags);
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> GetPosts([FromQuery] string? q)

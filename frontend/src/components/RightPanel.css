@@ -141,3 +141,46 @@
     color: #d94a70;
     border: 1px solid #f5c6d2;
 }
+
+/* REAL USER FOLLOW SUGGESTIONS */
+
+.follow-avatar {
+    overflow: hidden;
+    text-decoration: none;
+}
+
+.follow-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.follow-info a {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    text-decoration: none;
+}
+
+.follow-info a:hover strong {
+    color: #f53679;
+}
+
+.follow-info strong,
+.follow-info span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.follow-user button:disabled {
+    cursor: wait;
+    opacity: 0.55;
+}
+
+.follow-section .follow-error {
+    color: #d63b65;
+    font-size: 13px;
+}
