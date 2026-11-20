@@ -40,7 +40,28 @@ function Register() {
             navigate('/login')
         } catch (error) {
             console.error('Registration failed:', error)
-            setMessage(error.response?.data?.message || 'Registration failed. Please check your information.')
+            
+        
+        if (error.response?.status === 429) {
+            setMessage(
+                'Çok fazla kayıt denemesi yaptınız. Lütfen 10 dakika sonra tekrar deneyin.'
+            )
+            return
+        }
+            
+        const data = error.response?.data
+
+        const validationMessage = data?.errors
+        ? Object.values(data.errors).flat().join(' ')
+        : null
+
+        setMessage(
+        validationMessage ||
+        data?.message ||
+        (typeof data === 'string' ? data : null) ||
+        'Registration failed. Please check your information.'
+        )
+
         } finally {
             setIsLoading(false)
         }

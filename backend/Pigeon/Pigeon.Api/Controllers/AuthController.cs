@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 
 
 namespace Pigeon.Api.Controllers
@@ -31,6 +32,7 @@ namespace Pigeon.Api.Controllers
 
 
         [HttpPost("register")]
+        [EnableRateLimiting("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto request)
         {
             if (await _context.Users.AnyAsync(u => u.Username == request.Username))
@@ -66,6 +68,7 @@ namespace Pigeon.Api.Controllers
 
 
         [HttpPost("login")]
+        [EnableRateLimiting("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto request)
         {
             var user = await _context.Users

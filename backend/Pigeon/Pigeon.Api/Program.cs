@@ -3,6 +3,7 @@ using Pigeon.Api.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 
 namespace Pigeon.Api
 {
@@ -55,6 +56,37 @@ namespace Pigeon.Api
                 });
             });
 
+
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.AddPolicy("login", context =>
+                    RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                        factory: _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 5,
+                            Window = TimeSpan.FromMinutes(1),
+                            QueueLimit = 0,
+                            AutoReplenishment = true
+                        }));
+
+
+                options.AddPolicy("register", context =>
+                    RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                        factory: _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 5,
+                            Window = TimeSpan.FromMinutes(10),
+                            QueueLimit = 0,
+                            AutoReplenishment = true
+                        }));
+
+
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+
+
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
@@ -69,6 +101,8 @@ namespace Pigeon.Api
             app.UseCors("ReactApp");
 
             app.UseAuthentication();
+
+            app.UseRateLimiter();
 
             app.UseAuthorization();
 

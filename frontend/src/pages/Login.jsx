@@ -41,12 +41,21 @@ function Login() {
             sessionStorage.setItem('username', username)
             setToken(accessToken)
             navigate(destination, { replace: true })
-        } catch (err) {
-            console.error('Login failed:', err)
-            setError('E-posta veya şifre hatalı. Lütfen tekrar deneyin.')
-        } finally {
-            setLoading(false)
-        }
+        
+            } catch (err) {
+                console.error('Login failed:', err)
+
+                if (err.response?.status === 429) {
+                    setError(
+                        'Çok fazla giriş denemesi yaptınız. Lütfen bir dakika sonra tekrar deneyin.'
+                    )
+                } else {
+                    setError('E-posta veya şifre hatalı. Lütfen tekrar deneyin.')
+                }
+            } finally {
+                setLoading(false)
+            }
+
     }
 
     const loginForm = (prefix) => (
