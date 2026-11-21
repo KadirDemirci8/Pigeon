@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react'
+import { useContext, useState, useEffect } from 'react'
 import axios from 'axios'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Mail, LockKeyhole } from 'lucide-react'
@@ -13,7 +13,7 @@ function Login() {
     const [showPassword, setShowPassword] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
-    const { setToken } = useContext(AuthContext)
+    const {setToken, sessionExpired, setSessionExpired} = useContext(AuthContext)
     const navigate = useNavigate()
     const location = useLocation()
 
@@ -60,6 +60,11 @@ function Login() {
 
     const loginForm = (prefix) => (
         <form className="pigeon-card-form" onSubmit={handleSubmit}>
+            {(location.state?.sessionExpired || sessionExpired) && (
+                <p className="pigeon-card-error" role="alert">
+                    Your session has expired. Please log in again.
+                </p>
+            )}
             <label htmlFor={`${prefix}-email`}>E-posta</label>
             <div className="pigeon-field">
                 <Mail aria-hidden="true" size={19} />

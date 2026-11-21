@@ -4,7 +4,12 @@ import { Navigate, useLocation } from 'react-router-dom'
 import AuthContext from '../context/AuthContext'
 
 function ProtectedRoute({ children }) {
-    const { token, isCheckingAuth } = useContext(AuthContext)
+    const {
+        token,
+        isCheckingAuth,
+        sessionExpired
+    } = useContext(AuthContext)
+
     const location = useLocation()
 
     if (isCheckingAuth) {
@@ -15,7 +20,10 @@ function ProtectedRoute({ children }) {
         return (
             <Navigate
                 to="/login"
-                state={{ from: location }}
+                state={{
+                    from: location,
+                    sessionExpired
+                }}
                 replace
             />
         )

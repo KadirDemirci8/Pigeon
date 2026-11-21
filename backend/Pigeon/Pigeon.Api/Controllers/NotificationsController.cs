@@ -21,13 +21,29 @@ namespace Pigeon.Api.Controllers
 
         private int? GetCurrentUserId()
         {
-            var claim = User.FindFirstValue(
-                ClaimTypes.NameIdentifier
-            );
+            var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             return int.TryParse(claim, out int id)
                 ? id
                 : null;
+        }
+
+        // Returns the unread notification count for the sidebar badge.
+        [HttpGet("unread-count")]
+        public async Task<IActionResult> GetUnreadCount()
+        {
+            var userId = GetCurrentUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            var count = await _context.Notifications
+                .AsNoTracking()
+                .CountAsync(n =>
+                    n.RecipientId == userId.Value &&
+                    !n.IsRead);
+
+            return Ok(new { count });
         }
 
         [HttpGet]
@@ -66,7 +82,6 @@ namespace Pigeon.Api.Controllers
             return Ok(notifications);
         }
 
-
         [HttpPatch("{id:int}/read")]
         public async Task<IActionResult> MarkAsRead(int id)
         {
@@ -90,7 +105,6 @@ namespace Pigeon.Api.Controllers
             return NoContent();
         }
 
-
         [HttpPatch("read-all")]
         public async Task<IActionResult> MarkAllAsRead()
         {
@@ -108,6 +122,5 @@ namespace Pigeon.Api.Controllers
 
             return NoContent();
         }
-
     }
 }

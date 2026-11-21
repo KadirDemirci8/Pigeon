@@ -11,7 +11,9 @@ function formatNotificationTime(dateString) {
         : `${dateString}Z`
 
     const date = new Date(utcDate)
-    const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
+    const seconds = Math.floor(
+        (Date.now() - date.getTime()) / 1000
+    )
 
     if (Number.isNaN(seconds)) return ''
 
@@ -55,48 +57,56 @@ function Notifications() {
             setNotifications(prev =>
                 activeTab === 'unread'
                     ? []
-                    : prev.map(n => ({ ...n, isRead: true }))
+                    : prev.map(n => ({
+                        ...n,
+                        isRead: true
+                    }))
             )
+
+            window.dispatchEvent(
+                new Event('pigeon:notifications-changed')
+            )
+
         } catch (error) {
             console.error('Failed to mark all as read:', error)
             setError('Could not mark notifications as read.')
         }
     }
 
+    // FOLLOW BACK
+    const handleFollowBack = async (e, actorId) => {
+        e.stopPropagation()
 
-const handleFollowBack = async (e, actorId) => {
-    e.stopPropagation()
+        if (followLoadingId !== null) return
+        if (followStatuses[actorId] !== false) return
 
-    if (followLoadingId !== null) return
-    if (followStatuses[actorId] !== false) return
+        setFollowLoadingId(actorId)
 
-    setFollowLoadingId(actorId)
+        try {
+            const token = sessionStorage.getItem('accessToken')
 
-    try {
-        const token = sessionStorage.getItem('accessToken')
-
-        await axios.post(
-            `https://localhost:7151/api/follows/${actorId}`,
-            {},
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
+            await axios.post(
+                `https://localhost:7151/api/follows/${actorId}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
-            }
-        )
+            )
 
-        setFollowStatuses(prev => ({
-            ...prev,
-            [actorId]: true
-        }))
-    } catch (error) {
-        console.error('Failed to follow user:', error)
-        alert('Could not follow user. Please try again.')
-    } finally {
-        setFollowLoadingId(null)
+            setFollowStatuses(prev => ({
+                ...prev,
+                [actorId]: true
+            }))
+
+        } catch (error) {
+            console.error('Failed to follow user:', error)
+            alert('Could not follow user. Please try again.')
+        } finally {
+            setFollowLoadingId(null)
+        }
     }
-}
-
 
     // NOTIFICATION CLICK
     const handleNotificationClick = async (notification) => {
@@ -121,31 +131,41 @@ const handleFollowBack = async (e, actorId) => {
                             : n
                     )
                 )
+
+                window.dispatchEvent(
+                    new Event('pigeon:notifications-changed')
+                )
             }
 
-            
             if (notification.type === 'Follow') {
-                navigate(`/profile/${notification.actorUsername}`)
-            
-            
+                navigate(
+                    `/profile/${notification.actorUsername}`
+                )
             } else if (notification.postId != null) {
-                navigate(`/posts/${notification.postId}`, {
-                    state: {
-                        openComments:
-                            notification.type === 'Comment' ||
-                            notification.type === 'Reply',
-                        commentId: notification.commentId ?? null
+                navigate(
+                    `/posts/${notification.postId}`,
+                    {
+                        state: {
+                            openComments:
+                                notification.type === 'Comment' ||
+                                notification.type === 'Reply',
+                            commentId:
+                                notification.commentId ?? null
+                        }
                     }
-                })
-
-
+                )
             } else {
                 navigate('/home')
             }
 
         } catch (error) {
-            console.error('Failed to open notification:', error)
-            setError('Could not open notification. Please try again.')
+            console.error(
+                'Failed to open notification:',
+                error
+            )
+            setError(
+                'Could not open notification. Please try again.'
+            )
         }
     }
 
@@ -175,10 +195,16 @@ const handleFollowBack = async (e, actorId) => {
                 if (!cancelled) {
                     setNotifications(response.data)
                 }
+
             } catch (err) {
                 if (!cancelled) {
-                    console.error('Failed to load notifications:', err)
-                    setError('Could not load notifications.')
+                    console.error(
+                        'Failed to load notifications:',
+                        err
+                    )
+                    setError(
+                        'Could not load notifications.'
+                    )
                 }
             } finally {
                 if (!cancelled) {
@@ -224,7 +250,8 @@ const handleFollowBack = async (e, actorId) => {
 
                     return {
                         actorId,
-                        isFollowing: response.data.isFollowing
+                        isFollowing:
+                            response.data.isFollowing
                     }
                 })
             )
@@ -266,14 +293,18 @@ const handleFollowBack = async (e, actorId) => {
 
                 <div className="notifications-tabs">
                     <button
-                        className={activeTab === 'all' ? 'active' : ''}
+                        className={
+                            activeTab === 'all' ? 'active' : ''
+                        }
                         onClick={() => setActiveTab('all')}
                     >
                         All
                     </button>
 
                     <button
-                        className={activeTab === 'unread' ? 'active' : ''}
+                        className={
+                            activeTab === 'unread' ? 'active' : ''
+                        }
                         onClick={() => setActiveTab('unread')}
                     >
                         Unread
@@ -301,23 +332,19 @@ const handleFollowBack = async (e, actorId) => {
                                     notification.actorDisplayName ||
                                     notification.actorUsername
 
-                                
-                            const notificationText = {
-                                Follow: 'started following you.',
-                                Like: 'liked your post.',
-                                Comment: 'commented on your post.',
-                                Reply: 'replied to your comment.'
-                            }
+                                const notificationText = {
+                                    Follow: 'started following you.',
+                                    Like: 'liked your post.',
+                                    Comment: 'commented on your post.',
+                                    Reply: 'replied to your comment.'
+                                }
 
-
-                                
-                            const typeIcon = {
-                                Follow: '👤',
-                                Like: '❤️',
-                                Comment: '💬',
-                                Reply: '↩️'
-                            }
-
+                                const typeIcon = {
+                                    Follow: '👤',
+                                    Like: '❤️',
+                                    Comment: '💬',
+                                    Reply: '↩️'
+                                }
 
                                 return (
                                     <div
@@ -330,7 +357,9 @@ const handleFollowBack = async (e, actorId) => {
                                         role="button"
                                         tabIndex={0}
                                         onClick={() =>
-                                            handleNotificationClick(notification)
+                                            handleNotificationClick(
+                                                notification
+                                            )
                                         }
                                         onKeyDown={(e) => {
                                             if (
@@ -338,7 +367,9 @@ const handleFollowBack = async (e, actorId) => {
                                                 e.key === ' '
                                             ) {
                                                 e.preventDefault()
-                                                handleNotificationClick(notification)
+                                                handleNotificationClick(
+                                                    notification
+                                                )
                                             }
                                         }}
                                     >
@@ -359,10 +390,13 @@ const handleFollowBack = async (e, actorId) => {
 
                                         <div className="notification-content">
                                             <p>
-                                                <strong>{displayName}</strong>{' '}
+                                                <strong>
+                                                    {displayName}
+                                                </strong>{' '}
                                                 {notificationText[
                                                     notification.type
-                                                ] || 'interacted with you.'}
+                                                ] ||
+                                                    'interacted with you.'}
                                             </p>
 
                                             <span className="notification-time">
@@ -372,45 +406,61 @@ const handleFollowBack = async (e, actorId) => {
                                             </span>
                                         </div>
 
-                                        
-{notification.type === 'Follow' ? (
-    <div className="notification-follow-action">
-        {followStatuses[notification.actorId] === undefined ? (
-            <span className="notification-follow-loading">
-                Loading...
-            </span>
-        ) : followStatuses[notification.actorId] ? (
-            <button
-                type="button"
-                className="notification-follow-button following"
-                onClick={(e) => e.stopPropagation()}
-                onKeyDown={(e) => e.stopPropagation()}
-                disabled
-            >
-                Following
-            </button>
-        ) : (
-            <button
-                type="button"
-                className="notification-follow-button"
-                onClick={(e) =>
-                    handleFollowBack(e, notification.actorId)
-                }
-                onKeyDown={(e) => e.stopPropagation()}
-                disabled={followLoadingId !== null}
-            >
-                {followLoadingId === notification.actorId
-                    ? 'Following...'
-                    : 'Follow Back'}
-                            </button>
-                        )}
-                                </div>
-                            ) : (
-                                <div className="notification-action-icon">
-                                    {typeIcon[notification.type] || '🔔'}
-                                </div>
-                            )}
-
+                                        {notification.type === 'Follow' ? (
+                                            <div className="notification-follow-action">
+                                                {followStatuses[
+                                                    notification.actorId
+                                                ] === undefined ? (
+                                                    <span className="notification-follow-loading">
+                                                        Loading...
+                                                    </span>
+                                                ) : followStatuses[
+                                                    notification.actorId
+                                                ] ? (
+                                                    <button
+                                                        type="button"
+                                                        className="notification-follow-button following"
+                                                        onClick={(e) =>
+                                                            e.stopPropagation()
+                                                        }
+                                                        onKeyDown={(e) =>
+                                                            e.stopPropagation()
+                                                        }
+                                                        disabled
+                                                    >
+                                                        Following
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        className="notification-follow-button"
+                                                        onClick={(e) =>
+                                                            handleFollowBack(
+                                                                e,
+                                                                notification.actorId
+                                                            )
+                                                        }
+                                                        onKeyDown={(e) =>
+                                                            e.stopPropagation()
+                                                        }
+                                                        disabled={
+                                                            followLoadingId !== null
+                                                        }
+                                                    >
+                                                        {followLoadingId ===
+                                                        notification.actorId
+                                                            ? 'Following...'
+                                                            : 'Follow Back'}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="notification-action-icon">
+                                                {typeIcon[
+                                                    notification.type
+                                                ] || '🔔'}
+                                            </div>
+                                        )}
 
                                         {!notification.isRead && (
                                             <span className="notification-unread-dot" />
