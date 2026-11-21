@@ -1276,17 +1276,6 @@ return (
                 onChange={(e) => setCommentContent(e.target.value)}
             />
 
-            <textarea
-                placeholder="Write a comment..."
-                onFocus={(e) => {
-                    if (!isAuthenticated) {
-                        e.target.blur()
-                        requireLogin()
-                    }
-                }}
-                value={commentContent}
-                onChange={(e) => setCommentContent(e.target.value)}
-            />
 
 
             <button
