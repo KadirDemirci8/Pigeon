@@ -15,7 +15,7 @@ namespace Pigeon.Api.Controllers
     [Authorize]
     public class PostsController : ControllerBase
     {
-        private readonly AppDbContext _context; 
+        private readonly AppDbContext _context;
 
         public PostsController(AppDbContext context)
         {
@@ -348,6 +348,7 @@ namespace Pigeon.Api.Controllers
                     userId = p.UserId,
                     content = p.Content,
                     createdAt = p.CreatedAt,
+                    updatedAt = p.UpdatedAt,
                     username = p.User.Username,
                     displayName = p.User.DisplayName,
                     profileImageUrl = p.User.ProfileImageUrl,
@@ -402,6 +403,7 @@ namespace Pigeon.Api.Controllers
                     userId = p.UserId,
                     content = p.Content,
                     createdAt = p.CreatedAt,
+                    updatedAt = p.UpdatedAt,
                     username = p.User.Username,
                     displayName = p.User.DisplayName,
                     profileImageUrl = p.User.ProfileImageUrl,
@@ -459,6 +461,7 @@ namespace Pigeon.Api.Controllers
                     userId = p.UserId,
                     content = p.Content,
                     createdAt = p.CreatedAt,
+                    updatedAt = p.UpdatedAt,
                     username = p.User.Username,
                     displayName = p.User.DisplayName,
                     profileImageUrl = p.User.ProfileImageUrl,
@@ -505,6 +508,7 @@ namespace Pigeon.Api.Controllers
                     userId = r.Post.UserId,
                     content = r.Post.Content,
                     createdAt = r.Post.CreatedAt,
+                    updatedAt = r.Post.UpdatedAt,
                     username = r.Post.User.Username,
                     displayName = r.Post.User.DisplayName,
                     profileImageUrl = r.Post.User.ProfileImageUrl,
@@ -572,6 +576,7 @@ namespace Pigeon.Api.Controllers
                     userId = p.UserId,
                     content = p.Content,
                     createdAt = p.CreatedAt,
+                    updatedAt = p.UpdatedAt,
                     username = p.User.Username,
                     displayName = p.User.DisplayName,
                     profileImageUrl = p.User.ProfileImageUrl,
@@ -624,20 +629,33 @@ namespace Pigeon.Api.Controllers
             if (post == null)
                 return NotFound();
 
+
             if (post.UserId != userId.Value)
                 return Forbid();
+
+
+            if (DateTime.UtcNow >= post.CreatedAt.AddHours(1))
+            {
+                return StatusCode(403, new
+                {
+                    message = "Posts can only be edited within 60 minutes of creation."
+                });
+            }
 
             if (string.IsNullOrWhiteSpace(request.Content))
                 return BadRequest("Post content cannot be empty.");
 
+
             post.Content = request.Content.Trim();
+            post.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
             return Ok(new
             {
                 post.Id,
-                post.Content
+                post.Content,
+                post.UpdatedAt
             });
         }
 
@@ -662,6 +680,15 @@ namespace Pigeon.Api.Controllers
 
             if (post.UserId != userId.Value)
                 return Forbid();
+
+            if (DateTime.UtcNow >= post.CreatedAt.ToUniversalTime().AddHours(1))
+            {
+                return StatusCode(403, new
+                {
+                    message = "Posts can only be edited within 60 minutes of creation."
+                });
+            }
+
 
             var removeImageIds = request.RemoveImageIds ?? new List<int>();
             var newImages = request.NewImages ?? new List<IFormFile>();
@@ -814,6 +841,11 @@ namespace Pigeon.Api.Controllers
 
                 _context.PostImages.RemoveRange(imagesToRemove);
 
+                if (imagesToRemove.Count > 0 || newImages.Count > 0)
+                {
+                    post.UpdatedAt = DateTime.UtcNow;
+                }
+
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -871,6 +903,7 @@ namespace Pigeon.Api.Controllers
             return Ok(new
             {
                 message = "Post images updated successfully!",
+                updatedAt = post.UpdatedAt,
                 imageCount = finalImageCount,
                 images = post.Images
                     .Where(i => !removeImageIds.Contains(i.Id))
@@ -1196,6 +1229,7 @@ namespace Pigeon.Api.Controllers
                     id = c.Id,
                     content = c.Content,
                     createdAt = c.CreatedAt,
+                    updatedAt = c.UpdatedAt,
                     userId = c.UserId,
                     username = c.User.Username,
                     displayName = c.User.DisplayName,
@@ -1210,6 +1244,52 @@ namespace Pigeon.Api.Controllers
                 .ToListAsync();
 
             return Ok(comments);
+        }
+
+
+        [HttpPut("comments/{commentId}")]
+        public async Task<IActionResult> UpdateComment(
+            int commentId,
+            [FromBody] UpdateCommentDto request)
+        {
+            var userId = GetCurrentUserId();
+
+            if (userId == null)
+                return Unauthorized();
+
+            var comment = await _context.Comments.FindAsync(commentId);
+
+            if (comment == null)
+                return NotFound("Comment not found.");
+
+            if (comment.UserId != userId.Value)
+                return Forbid();
+
+
+            if (DateTime.UtcNow >= comment.CreatedAt.AddHours(1))
+            {
+                return StatusCode(403, new
+                {
+                    message = "Comments can only be edited within 60 minutes of creation."
+                });
+            }
+
+            var content = request.Content?.Trim();
+
+            if (string.IsNullOrWhiteSpace(content))
+                return BadRequest("Comment cannot be empty.");
+
+            comment.Content = content;
+            comment.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                id = comment.Id,
+                content = comment.Content,
+                updatedAt = comment.UpdatedAt
+            });
         }
 
 

@@ -9,6 +9,29 @@ import { createPortal } from 'react-dom'
 function PostCard({ post, currentUserId, currentUser, onPostDeleted, onBookmarkRemoved, onRepostRemoved, repostedBy, autoOpenComments = false, targetCommentId = null}) {
 
     const isOwner = Number(post.userId) === Number(currentUserId)
+    const [now, setNow] = useState(Date.now())
+
+    useEffect(() => {
+        const intervalId = window.setInterval(() => setNow(Date.now()), 10000)
+        return () => window.clearInterval(intervalId)
+    }, [])
+
+    const parseUtcDate = (dateString) => {
+    if (!dateString) return null
+
+    const value = String(dateString)
+
+    const hasTimezone = /(?:Z|[+-]\d{2}:\d{2})$/i.test(value)
+
+    return new Date(hasTimezone ? value : `${value}Z`)
+}
+
+const createdAt = parseUtcDate(post.createdAt)
+
+const canEditPost =
+    createdAt !== null &&
+    !Number.isNaN(createdAt.getTime()) &&
+    Date.now() < createdAt.getTime() + 60 * 60 * 1000
 
 const isAuthenticated = Boolean(sessionStorage.getItem('accessToken'))
 
@@ -64,6 +87,7 @@ const handleSaveImages = async () => {
         )
 
         const updatedDetails = response.data.images ?? []
+        setDisplayUpdatedAt(response.data.updatedAt)
 
         setDisplayImageDetails(updatedDetails)
         setDisplayImages(updatedDetails.map(image => image.imageUrl))
@@ -124,6 +148,7 @@ const handleSaveEdit = async () => {
 
             setDisplayContent(response.data.content)
             setEditedContent(response.data.content)
+            setDisplayUpdatedAt(response.data.updatedAt)
         }
 
         if (hasImageChanges) {
@@ -329,6 +354,7 @@ const handleRepost = async () => {
     const [editedContent, setEditedContent] = useState(post.content ?? '')
     const [isSavingEdit, setIsSavingEdit] = useState(false)
     const [displayContent, setDisplayContent] = useState(post.content ?? '')
+    const [displayUpdatedAt, setDisplayUpdatedAt] = useState(post.updatedAt ?? null)
     const [removedImageIds, setRemovedImageIds] = useState([])
     const [newEditImages, setNewEditImages] = useState([])
     const [isSavingImages, setIsSavingImages] = useState(false)
@@ -368,7 +394,8 @@ useEffect(() => {
 
 useEffect(() => {
     setDisplayContent(post.content ?? '')
-}, [post.id, post.content])
+    setDisplayUpdatedAt(post.updatedAt ?? null)
+}, [post.id, post.content, post.updatedAt])
 
 
 
@@ -415,6 +442,10 @@ useEffect(() => {
     const [replyContent, setReplyContent] = useState('')
     const [isSortOpen, setIsSortOpen] = useState(false)
     const [sortOrder, setSortOrder] = useState('recent')
+    const [editingCommentId, setEditingCommentId] = useState(null)
+    const [editingCommentContent, setEditingCommentContent] = useState('')
+    const [isSavingComment, setIsSavingComment] = useState(false)
+    const [commentEditError, setCommentEditError] = useState('')
 
 
 const mainComments = comments.filter(
@@ -608,6 +639,50 @@ const handleReply = async () => {
 
     
 
+const handleSaveCommentEdit = async (commentId) => {
+    if (isSavingComment || !requireLogin()) return
+
+    const content = editingCommentContent.trim()
+    if (!content || content.length > 500) {
+        setCommentEditError('Comment must contain 1–500 characters.')
+        return
+    }
+
+    setIsSavingComment(true)
+    setCommentEditError('')
+
+    try {
+        const token = sessionStorage.getItem('accessToken')
+        const response = await axios.put(
+            `https://localhost:7151/api/posts/comments/${commentId}`,
+            { content },
+            { headers: { Authorization: `Bearer ${token}` } }
+        )
+
+        setComments(prev => prev.map(comment =>
+            comment.id === commentId
+                ? {
+                    ...comment,
+                    content: response.data.content,
+                    updatedAt: response.data.updatedAt
+                }
+                : comment
+        ))
+        setEditingCommentId(null)
+        setEditingCommentContent('')
+    } catch (error) {
+        console.error('Failed to edit comment:', error)
+        const message = error.response?.data?.message
+        setCommentEditError(
+            error.response?.status === 403
+                ? (message || 'Comments can only be edited within 60 minutes of creation.')
+                : (message || 'Could not edit comment. Please try again.')
+        )
+    } finally {
+        setIsSavingComment(false)
+    }
+}
+
 const handleDeleteComment = async (commentId) => {
     if (!requireLogin()) return
 
@@ -732,26 +807,31 @@ return (
                     </Link>
                 </div>
                 
+                {displayUpdatedAt && (
+                <span
+                    className="post-edited-label"
+                    title={`Last edited: ${new Date(displayUpdatedAt).toLocaleString()}`}
+                >
+                    (edited)
+                </span>
+            )}
         {isOwner && (
             <>
+                {canEditPost && (
                 <button
                     type="button"
                     className="edit-post-button"
                     aria-label="Edit post"
-                    
-                    
-            onClick={() => {
-                setEditedContent(displayContent)
-                setRemovedImageIds([])
-                setNewEditImages([])
-                setIsEditing(true)
-            }}
-
-
-                                        
+                    onClick={() => {
+                        setEditedContent(displayContent)
+                        setRemovedImageIds([])
+                        setNewEditImages([])
+                        setIsEditing(true)
+                    }}
                 >
                     <Pencil size={18} />
                 </button>
+            )}
 
                 <button
                     type="button"
@@ -1134,7 +1214,53 @@ return (
                 <div className="comment-item">
                     <strong>{comment.displayName}</strong>
                     <span> @{comment.username}</span>
-                    <p>{comment.content}</p>
+                    {comment.updatedAt && (
+                        <span
+                            className="comment-edited-label"
+                            title={`Last edited: ${new Date(comment.updatedAt).toLocaleString()}`}
+                        >
+                            {' '}(edited)
+                        </span>
+                    )}
+
+                    {editingCommentId === comment.id ? (
+                        <div className="comment-edit-form">
+                            <textarea
+                                value={editingCommentContent}
+                                onChange={e => setEditingCommentContent(e.target.value)}
+                                maxLength={500}
+                                rows={3}
+                                aria-label="Edit comment"
+                            />
+                            {commentEditError && (
+                                <p className="comment-edit-error" role="alert">
+                                    {commentEditError}
+                                </p>
+                            )}
+                            <div className="comment-edit-buttons">
+                                <button
+                                    type="button"
+                                    disabled={isSavingComment}
+                                    onClick={() => {
+                                        setEditingCommentId(null)
+                                        setEditingCommentContent('')
+                                        setCommentEditError('')
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={isSavingComment || !editingCommentContent.trim()}
+                                    onClick={() => handleSaveCommentEdit(comment.id)}
+                                >
+                                    {isSavingComment ? 'Saving...' : 'Save'}
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <p>{comment.content}</p>
+                    )}
 
                     <div className="comment-actions">
 
@@ -1184,6 +1310,26 @@ return (
                         >
                             <MoreHorizontal size={18} />
                         </button>
+
+                        
+                    {Number(comment.userId) === Number(currentUserId) &&
+                        Boolean(comment.createdAt) &&
+                        now < parseUtcDate(comment.createdAt).getTime() + 60 * 60 * 1000 && (
+                            <button
+                                type="button"
+                                className="comment-edit-trigger"
+                                aria-label="Edit comment"
+                                title="Edit comment"
+                                onClick={() => {
+                                    setEditingCommentId(comment.id)
+                                    setEditingCommentContent(comment.content)
+                                    setCommentEditError('')
+                                }}
+                            >
+                                <Pencil size={15} />
+                            </button>
+                        )}
+
 
                         {Number(comment.userId) === Number(currentUserId) && (
                             <button

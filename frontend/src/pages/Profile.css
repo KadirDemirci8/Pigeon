@@ -557,3 +557,53 @@
     color: #c52a51 !important;
     font-size: 13px;
 }
+
+/* PROFILE LOGOUT BUTTON */
+
+.profile-logout-button {
+    position: absolute;
+    top: 61px;
+    right: 24px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    padding: 7px 14px;
+    border: 1px solid #f3dce3;
+    border-radius: 24px;
+
+    background: #fff8fa;
+    color: #9b7886;
+
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.profile-logout-button:hover {
+    background: #fff0f4;
+    color: #d94770;
+    border-color: #efbdcc;
+}
+
+/* Mobile profile action buttons */
+
+@media (max-width: 600px) {
+    .profile-info {
+        padding-top: 100px;
+    }
+
+    .profile-edit-button {
+        top: 16px;
+        right: 24px;
+    }
+
+    .profile-logout-button {
+        top: 61px;
+        right: 24px;
+    }
+}

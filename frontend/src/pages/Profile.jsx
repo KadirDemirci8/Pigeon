@@ -5,11 +5,20 @@ import PostCard from '../components/PostCard'
 import MainLayout from '../components/MainLayout'
 import './Profile.css'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Camera } from 'lucide-react'
+import { ArrowLeft, Camera, LogOut } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+
 
 function Profile() {
     const { username } = useParams()
     const navigate = useNavigate()
+
+    const { logout } = useAuth()
+
+const handleLogout = () => {
+    logout()
+    navigate('/login', { replace: true })
+}
 
     const [profile, setProfile] = useState(null)
     const [followersCount, setFollowersCount] = useState(0)
@@ -813,6 +822,7 @@ return (
                         >
                             Edit Profile
                         </button>
+                        
                     ) : (
                         <button
                             type="button"
@@ -825,6 +835,17 @@ return (
                                 : isFollowing
                                     ? 'Following'
                                     : 'Follow'}
+                                               </button>
+                    )}
+
+                    {Number(sessionStorage.getItem('userId')) === profile.id && (
+                        <button
+                            type="button"
+                            className="profile-logout-button"
+                            onClick={handleLogout}
+                        >
+                            <LogOut size={14} />
+                            Log out
                         </button>
                     )}
 

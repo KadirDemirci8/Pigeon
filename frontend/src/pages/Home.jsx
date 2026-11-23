@@ -111,9 +111,7 @@ function Home() {
                     onPostDeleted={refreshFeed}
                 />
 
-                <button onClick={handleLogout}>
-                    Logout
-                </button>
+            
             </div>
 
             {isPostModalOpen && createPortal(
