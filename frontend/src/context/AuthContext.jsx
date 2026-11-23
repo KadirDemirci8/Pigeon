@@ -1,112 +1,80 @@
-
 import { createContext, useState, useEffect, useCallback, useContext } from 'react'
 import axios from 'axios'
+import { clearCsrfToken } from '../services/apiClient'
 
 const AuthContext = createContext(null)
+const API_BASE = 'https://localhost:7151'
 
 export function AuthProvider({ children }) {
-    const [token, setToken] = useState(
-        () => sessionStorage.getItem('accessToken')
-    )
-
+    const [isAuthenticated, setAuthenticated] = useState(false)
     const [isCheckingAuth, setIsCheckingAuth] = useState(true)
     const [sessionExpired, setSessionExpired] = useState(false)
 
-    const logout = useCallback((expired = false) => {
+    const clearLocalSession = useCallback((expired = false) => {
         sessionStorage.removeItem('accessToken')
         sessionStorage.removeItem('userId')
         sessionStorage.removeItem('username')
-
-        setToken(null)
+        setAuthenticated(false)
         setSessionExpired(expired)
         setIsCheckingAuth(false)
     }, [])
 
+    const logout = useCallback(async () => {
+        // Do not claim that logout succeeded unless the backend cleared the cookie.
+        await axios.post(`${API_BASE}/api/auth/logout`, {})
+        clearCsrfToken()
+        clearLocalSession(false)
+    }, [clearLocalSession])
+
     useEffect(() => {
-        if (!token) {
-            setIsCheckingAuth(false)
-            return
-        }
-
         let cancelled = false
-
-        const validateToken = async () => {
-            setIsCheckingAuth(true)
-
+        const restoreSession = async () => {
             try {
-                await axios.get(
-                    'https://localhost:7151/api/auth/me',
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }
-                )
+                const { data } = await axios.get(`${API_BASE}/api/auth/me`)
+                if (cancelled) return
+                sessionStorage.removeItem('accessToken')
+                sessionStorage.setItem('userId', String(data.userId))
+                sessionStorage.setItem('username', data.username)
+                setAuthenticated(true)
+                setSessionExpired(false)
             } catch (error) {
-                if (
-                    !cancelled &&
-                    error.response?.status === 401 &&
-                    sessionStorage.getItem('accessToken') === token
-                ) {
-                    logout(true)
-                } else if (!cancelled) {
-                    console.error('Token validation failed:', error)
+                if (!cancelled) {
+                    if (error.response?.status === 401) {
+                        clearLocalSession(Boolean(sessionStorage.getItem('userId')))
+                    } else {
+                        // Network errors are not proof of a signed-out session.
+                        console.error('Session verification failed:', error)
+                        clearLocalSession(false)
+                    }
                 }
             } finally {
-                if (!cancelled) {
-                    setIsCheckingAuth(false)
-                }
+                if (!cancelled) setIsCheckingAuth(false)
             }
         }
-
-        validateToken()
-
-        return () => {
-            cancelled = true
-        }
-    }, [token, logout])
+        restoreSession()
+        return () => { cancelled = true }
+    }, [clearLocalSession])
 
     useEffect(() => {
         const interceptorId = axios.interceptors.response.use(
             response => response,
             error => {
-                const currentToken =
-                    sessionStorage.getItem('accessToken')
-
-                const requestAuthorization =
-                    error.config?.headers?.Authorization
-
-                const isAuthenticatedRequest =
-                    currentToken &&
-                    requestAuthorization === `Bearer ${currentToken}`
-
-                if (
-                    error.response?.status === 401 &&
-                    isAuthenticatedRequest
-                ) {
-                    logout(true)
+                const url = error.config?.url ?? ''
+                const isAuthEndpoint = /\/api\/auth\/(login|me|csrf|logout)/i.test(url)
+                if (error.response?.status === 401 && !isAuthEndpoint) {
+                    clearLocalSession(true)
                 }
-
                 return Promise.reject(error)
             }
         )
-
-        return () => {
-            axios.interceptors.response.eject(interceptorId)
-        }
-    }, [logout])
+        return () => axios.interceptors.response.eject(interceptorId)
+    }, [clearLocalSession])
 
     return (
-        <AuthContext.Provider
-            value={{
-                token,
-                setToken,
-                logout,
-                isCheckingAuth,
-                sessionExpired,
-                setSessionExpired
-            }}
-        >
+        <AuthContext.Provider value={{
+            isAuthenticated, setAuthenticated, logout,
+            isCheckingAuth, sessionExpired, setSessionExpired
+        }}>
             {children}
         </AuthContext.Provider>
     )

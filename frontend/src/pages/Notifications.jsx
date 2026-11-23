@@ -42,14 +42,14 @@ function Notifications() {
     // MARK ALL AS READ
     const handleMarkAllAsRead = async () => {
         try {
-            const token = sessionStorage.getItem('accessToken')
+            const token = sessionStorage.getItem('userId')
 
             await axios.patch(
                 'https://localhost:7151/api/notifications/read-all',
                 {},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -83,14 +83,14 @@ function Notifications() {
         setFollowLoadingId(actorId)
 
         try {
-            const token = sessionStorage.getItem('accessToken')
+            const token = sessionStorage.getItem('userId')
 
             await axios.post(
                 `https://localhost:7151/api/follows/${actorId}`,
                 {},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -111,7 +111,7 @@ function Notifications() {
     // NOTIFICATION CLICK
     const handleNotificationClick = async (notification) => {
         try {
-            const token = sessionStorage.getItem('accessToken')
+            const token = sessionStorage.getItem('userId')
 
             if (!notification.isRead) {
                 await axios.patch(
@@ -119,7 +119,7 @@ function Notifications() {
                     {},
                     {
                         headers: {
-                            Authorization: `Bearer ${token}`
+
                         }
                     }
                 )
@@ -178,7 +178,7 @@ function Notifications() {
             setError('')
 
             try {
-                const token = sessionStorage.getItem('accessToken')
+                const token = sessionStorage.getItem('userId')
 
                 const response = await axios.get(
                     'https://localhost:7151/api/notifications',
@@ -187,7 +187,7 @@ function Notifications() {
                             unreadOnly: activeTab === 'unread'
                         },
                         headers: {
-                            Authorization: `Bearer ${token}`
+
                         }
                     }
                 )
@@ -235,7 +235,7 @@ function Notifications() {
         let cancelled = false
 
         const fetchFollowStatuses = async () => {
-            const token = sessionStorage.getItem('accessToken')
+            const token = sessionStorage.getItem('userId')
 
             const results = await Promise.allSettled(
                 actorIds.map(async actorId => {
@@ -243,7 +243,7 @@ function Notifications() {
                         `https://localhost:7151/api/follows/${actorId}/status`,
                         {
                             headers: {
-                                Authorization: `Bearer ${token}`
+
                             }
                         }
                     )

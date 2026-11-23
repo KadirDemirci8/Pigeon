@@ -15,7 +15,7 @@ function MainLayout({ children, onPostClick }) {
     const location = useLocation()
 
     const refreshUnreadCount = useCallback(async () => {
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
 
         if (!token) {
             setUnreadCount(0)
@@ -27,7 +27,7 @@ function MainLayout({ children, onPostClick }) {
                 `${API_URL}/api/notifications/unread-count`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )

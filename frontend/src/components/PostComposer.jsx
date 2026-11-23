@@ -97,7 +97,7 @@ const handlePost = async () => {
 
     try {
 
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
 
         const formData = new FormData()
         formData.append('Content', content.trim())
@@ -111,7 +111,7 @@ const handlePost = async () => {
             formData,
             {
                 headers: {
-                    Authorization: `Bearer ${token}`
+
                 }
             }
         )

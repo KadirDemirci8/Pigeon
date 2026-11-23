@@ -5,7 +5,7 @@ import AuthContext from '../context/AuthContext'
 
 function ProtectedRoute({ children }) {
     const {
-        token,
+        isAuthenticated,
         isCheckingAuth,
         sessionExpired
     } = useContext(AuthContext)
@@ -16,7 +16,7 @@ function ProtectedRoute({ children }) {
         return <div>Loading...</div>
     }
 
-    if (!token) {
+    if (!isAuthenticated) {
         return (
             <Navigate
                 to="/login"

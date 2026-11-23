@@ -21,7 +21,7 @@ function Feed({
             setPosts([])
 
             try {
-                const token = sessionStorage.getItem('accessToken')
+                const token = sessionStorage.getItem('userId')
 
                 const endpoint = activeTab === 'following'
                     ? 'https://localhost:7151/api/posts/following'
@@ -29,7 +29,7 @@ function Feed({
 
                 const response = await axios.get(endpoint, {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 })
 

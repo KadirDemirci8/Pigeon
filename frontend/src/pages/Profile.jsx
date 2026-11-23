@@ -15,9 +15,14 @@ function Profile() {
 
     const { logout } = useAuth()
 
-const handleLogout = () => {
-    logout()
-    navigate('/login', { replace: true })
+const handleLogout = async () => {
+    try {
+        await logout()
+        navigate('/login', { replace: true })
+    } catch (error) {
+        console.error('Logout failed:', error)
+        alert('Could not log out. Please try again.')
+    }
 }
 
     const [profile, setProfile] = useState(null)
@@ -88,13 +93,13 @@ useEffect(() => {
 
             setProfile(response.data)
 
-            const token = sessionStorage.getItem('accessToken')
+            const token = sessionStorage.getItem('userId')
 
             const followResponse = await axios.get(
                 `https://localhost:7151/api/follows/${response.data.id}/status`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -108,7 +113,7 @@ useEffect(() => {
                 `https://localhost:7151/api/posts/user/${username}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -190,13 +195,13 @@ const fetchFollowUsers = async (type) => {
     setFollowUsersError('')
 
     try {
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
 
         const response = await axios.get(
             `https://localhost:7151/api/follows/${profile.id}/${type}`,
             {
                 headers: {
-                    Authorization: `Bearer ${token}`
+
                 }
             }
         )
@@ -211,7 +216,7 @@ const fetchFollowUsers = async (type) => {
                     `https://localhost:7151/api/follows/${user.id}/status`,
                     {
                         headers: {
-                            Authorization: `Bearer ${token}`
+
                         }
                     }
                 )
@@ -242,13 +247,13 @@ const openFollowModal = async (type) => {
 
     // Güncel takipçi ve takip edilen sayılarını al
     try {
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
 
         const response = await axios.get(
             `https://localhost:7151/api/follows/${profile.id}/status`,
             {
                 headers: {
-                    Authorization: `Bearer ${token}`
+
                 }
             }
         )
@@ -275,7 +280,7 @@ const handleListFollow = async (userId) => {
     setFollowListLoadingId(userId)
     setFollowActionError('')
 
-    const token = sessionStorage.getItem('accessToken')
+    const token = sessionStorage.getItem('userId')
 
     const currentlyFollowing = followUserStatuses[userId]
 
@@ -285,7 +290,7 @@ const handleListFollow = async (userId) => {
                 `https://localhost:7151/api/follows/${userId}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -295,7 +300,7 @@ const handleListFollow = async (userId) => {
                 {},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -354,14 +359,14 @@ const handleFollow = async () => {
     setIsFollowLoading(true)
 
     try {
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
 
         if (isFollowing) {
             await axios.delete(
                 `https://localhost:7151/api/follows/${profile.id}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -374,7 +379,7 @@ const handleFollow = async () => {
                 {},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -402,7 +407,7 @@ const handleSaveProfile = async () => {
     setEditError('')
 
     try {
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
 
         const response = await axios.put(
             'https://localhost:7151/api/users/me',
@@ -412,7 +417,7 @@ const handleSaveProfile = async () => {
             },
             {
                 headers: {
-                    Authorization: `Bearer ${token}`
+
                 }
             }
         )
@@ -428,7 +433,7 @@ const handleSaveProfile = async () => {
                     formData,
                     {
                         headers: {
-                            Authorization: `Bearer ${token}`
+
                         }
                     }
                 )
@@ -466,13 +471,13 @@ const handleSaveProfile = async () => {
 
 const fetchPosts = async () => {
     try {
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
 
         const response = await axios.get(
             `https://localhost:7151/api/posts/user/${username}`,
             {
                 headers: {
-                    Authorization: `Bearer ${token}`
+
                 }
             }
         )
@@ -488,13 +493,13 @@ const fetchReposts = async () => {
     setRepostsLoading(true)
 
     try {
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
 
         const response = await axios.get(
             `https://localhost:7151/api/reposts/user/${username}`,
             {
                 headers: {
-                    Authorization: `Bearer ${token}`
+
                 }
             }
         )

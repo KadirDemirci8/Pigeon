@@ -21,9 +21,13 @@ function Home() {
     const [currentUser, setCurrentUser] = useState(null)
     const [isPostModalOpen, setIsPostModalOpen] = useState(false)
 
-    const handleLogout = () => {
-        logout()
-        navigate('/login')
+    const handleLogout = async () => {
+        try {
+            await logout()
+            navigate('/login')
+        } catch (error) {
+            console.error('Logout failed:', error)
+        }
     }
 
     const refreshFeed = () => {

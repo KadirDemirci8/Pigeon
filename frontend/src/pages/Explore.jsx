@@ -45,7 +45,7 @@ useEffect(() => {
                 }
             )
 
-            const token = sessionStorage.getItem('accessToken')
+            const token = sessionStorage.getItem('userId')
             const currentUserId = Number(sessionStorage.getItem('userId'))
 
             const filteredUsers = response.data.filter(
@@ -61,7 +61,7 @@ useEffect(() => {
                             `https://localhost:7151/api/follows/${user.id}/status`,
                             {
                                 headers: {
-                                    Authorization: `Bearer ${token}`
+
                                 },
                                 signal: controller.signal
                             }
@@ -109,7 +109,7 @@ useEffect(() => {
         setPostsError('')
 
         try {
-            const token = sessionStorage.getItem('accessToken')
+            const token = sessionStorage.getItem('userId')
 
             const response = await axios.get(
                 'https://localhost:7151/api/posts',
@@ -118,7 +118,7 @@ useEffect(() => {
                         q: search.trim()
                     },
                     headers: token
-                        ? { Authorization: `Bearer ${token}` }
+                        ? {}
                         : {},
                     signal: controller.signal
                 }
@@ -176,7 +176,7 @@ const handleFollow = async (userId) => {
 
     setFollowLoadingId(userId)
 
-    const token = sessionStorage.getItem('accessToken')
+    const token = sessionStorage.getItem('userId')
     const currentlyFollowing = followStatuses[userId]
 
     try {
@@ -185,7 +185,7 @@ const handleFollow = async (userId) => {
                 `https://localhost:7151/api/follows/${userId}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -195,7 +195,7 @@ const handleFollow = async (userId) => {
                 {},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )

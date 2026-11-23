@@ -13,7 +13,7 @@ function Login() {
     const [showPassword, setShowPassword] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
-    const {setToken, sessionExpired, setSessionExpired} = useContext(AuthContext)
+    const { setAuthenticated, sessionExpired, setSessionExpired } = useContext(AuthContext)
     const navigate = useNavigate()
     const location = useLocation()
 
@@ -31,15 +31,14 @@ function Login() {
             const response = await axios.post(`${API_BASE}/api/auth/login`, {
                 email: email.trim(), password
             })
-            const { accessToken, userId, username } = response.data
-            if (!accessToken) throw new Error('Missing access token')
-            await axios.get(`${API_BASE}/api/auth/me`, {
-                headers: { Authorization: `Bearer ${accessToken}` }
-            })
-            sessionStorage.setItem('accessToken', accessToken)
+            const { userId, username } = response.data
+            if (!userId || !username) throw new Error('Missing user identity')
+            await axios.get(`${API_BASE}/api/auth/me`)
+            sessionStorage.removeItem('accessToken')
             sessionStorage.setItem('userId', String(userId))
             sessionStorage.setItem('username', username)
-            setToken(accessToken)
+            setAuthenticated(true)
+            setSessionExpired(false)
             navigate(destination, { replace: true })
         
             } catch (err) {

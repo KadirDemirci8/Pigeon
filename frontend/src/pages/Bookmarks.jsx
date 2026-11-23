@@ -17,13 +17,13 @@ function Bookmarks() {
         try {
             setError('')
 
-            const token = sessionStorage.getItem('accessToken')
+            const token = sessionStorage.getItem('userId')
 
             const response = await axios.get(
                 'https://localhost:7151/api/bookmarks',
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )

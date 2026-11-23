@@ -19,13 +19,13 @@ function RightPanel() {
         try {
             setError('')
 
-            const token = sessionStorage.getItem('accessToken')
+            const token = sessionStorage.getItem('userId')
 
             const response = await axios.get(
                 `${API_URL}/api/users/suggestions`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -47,13 +47,13 @@ function RightPanel() {
 useEffect(() => {
     const fetchTrends = async () => {
         try {
-            const token = sessionStorage.getItem('accessToken')
+            const token = sessionStorage.getItem('userId')
 
             const response = await axios.get(
                 `${API_URL}/api/posts/trending`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -76,14 +76,14 @@ useEffect(() => {
         setFollowingId(userId)
 
         try {
-            const token = sessionStorage.getItem('accessToken')
+            const token = sessionStorage.getItem('userId')
 
             await axios.post(
                 `${API_URL}/api/follows/${userId}`,
                 {},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )

@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext'
 import './PostCard.css'
 import { Heart, MessageCircle, Repeat2, Bookmark, Trash2, Send, ChevronDown, CornerUpLeft, MoreHorizontal, ChevronLeft, ChevronRight, Pencil, Share2} from 'lucide-react'
 import { useState, useEffect, useMemo   } from 'react'
@@ -33,7 +34,7 @@ const canEditPost =
     !Number.isNaN(createdAt.getTime()) &&
     Date.now() < createdAt.getTime() + 60 * 60 * 1000
 
-const isAuthenticated = Boolean(sessionStorage.getItem('accessToken'))
+const { isAuthenticated } = useAuth()
 
 
 const navigate = useNavigate()
@@ -65,7 +66,7 @@ const handleSaveImages = async () => {
     setIsSavingImages(true)
 
     try {
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
         const formData = new FormData()
 
         removedImageIds.forEach(id => {
@@ -81,7 +82,7 @@ const handleSaveImages = async () => {
             formData,
             {
                 headers: {
-                    Authorization: `Bearer ${token}`
+
                 }
             }
         )
@@ -134,14 +135,14 @@ const handleSaveEdit = async () => {
 
     try {
         if (content !== displayContent.trim()) {
-            const token = sessionStorage.getItem('accessToken')
+            const token = sessionStorage.getItem('userId')
 
             const response = await axios.put(
                 `https://localhost:7151/api/posts/${post.id}`,
                 { content },
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -176,13 +177,13 @@ const handleSaveEdit = async () => {
             if (!confirmed) return
 
             try {
-                const token = sessionStorage.getItem('accessToken')
+                const token = sessionStorage.getItem('userId')
 
                 await axios.delete(
                     `https://localhost:7151/api/posts/${post.id}`,
                     {
                         headers: {
-                            Authorization: `Bearer ${token}`
+
                         }
                     }
                 )
@@ -197,14 +198,14 @@ const handleSaveEdit = async () => {
 
             if (!requireLogin()) return
     try {
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
 
         if (isLiked) {
             await axios.delete(
                 `https://localhost:7151/api/posts/${post.id}/like`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -217,7 +218,7 @@ const handleSaveEdit = async () => {
                 {},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -244,14 +245,14 @@ const handleBookmark = async () => {
     setBookmarkLoading(true)
 
     try {
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
 
         if (isBookmarked) {
             await axios.delete(
                 `https://localhost:7151/api/bookmarks/${post.id}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -264,7 +265,7 @@ const handleBookmark = async () => {
                 {},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -290,14 +291,14 @@ const handleRepost = async () => {
     setRepostLoading(true)
 
     try {
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
 
         if (isReposted) {
             await axios.delete(
                 `https://localhost:7151/api/reposts/${post.id}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -311,7 +312,7 @@ const handleRepost = async () => {
                 {},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -488,7 +489,7 @@ const handleComment = async () => {
 
 
                 try {
-                    const token = sessionStorage.getItem('accessToken')
+                    const token = sessionStorage.getItem('userId')
 
                     await axios.post(
                         `https://localhost:7151/api/posts/${post.id}/comments`,
@@ -497,7 +498,7 @@ const handleComment = async () => {
                         },
                         {
                             headers: {
-                                Authorization: `Bearer ${token}`
+
                             }
                         }
                     )
@@ -506,7 +507,7 @@ const handleComment = async () => {
                     `https://localhost:7151/api/posts/${post.id}/comments`,
                     {
                         headers: {
-                            Authorization: `Bearer ${token}`
+
                         }
                     }
                 )
@@ -526,13 +527,13 @@ const handleComment = async () => {
 
         const fetchComments = async () => {
             try {
-                const token = sessionStorage.getItem('accessToken')
+                const token = sessionStorage.getItem('userId')
 
                 const response = await axios.get(
                     `https://localhost:7151/api/posts/${post.id}/comments`,
                     {
                         headers: {
-                            Authorization: `Bearer ${token}`
+
                         }
                     }
                 )
@@ -600,7 +601,7 @@ const handleReply = async () => {
 
 
     try {
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
 
         await axios.post(
             `https://localhost:7151/api/posts/${post.id}/comments`,
@@ -610,7 +611,7 @@ const handleReply = async () => {
             },
             {
                 headers: {
-                    Authorization: `Bearer ${token}`
+
                 }
             }
         )
@@ -619,7 +620,7 @@ const handleReply = async () => {
             `https://localhost:7151/api/posts/${post.id}/comments`,
             {
                 headers: {
-                    Authorization: `Bearer ${token}`
+
                 }
             }
         )
@@ -652,11 +653,11 @@ const handleSaveCommentEdit = async (commentId) => {
     setCommentEditError('')
 
     try {
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
         const response = await axios.put(
             `https://localhost:7151/api/posts/comments/${commentId}`,
             { content },
-            { headers: { Authorization: `Bearer ${token}` } }
+            { headers: {} }
         )
 
         setComments(prev => prev.map(comment =>
@@ -694,7 +695,7 @@ const handleDeleteComment = async (commentId) => {
             `https://localhost:7151/api/posts/comments/${commentId}`,
             {
                 headers: {
-                    Authorization: `Bearer ${sessionStorage.getItem('accessToken')}`
+
                 }
             }
         )
@@ -723,14 +724,14 @@ const handleCommentLike = async (commentId, isLiked) => {
 
 
     try {
-        const token = sessionStorage.getItem('accessToken')
+        const token = sessionStorage.getItem('userId')
 
         if (isLiked) {
             await axios.delete(
                 `https://localhost:7151/api/comments/${commentId}/like`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )
@@ -740,7 +741,7 @@ const handleCommentLike = async (commentId, isLiked) => {
                 {},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+
                     }
                 }
             )

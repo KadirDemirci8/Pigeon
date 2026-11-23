@@ -23,7 +23,7 @@ function PostDetails() {
             setError('')
 
             try {
-                const token = sessionStorage.getItem('accessToken')
+                const token = sessionStorage.getItem('userId')
 
                 
             const response = await axios.get(
@@ -31,7 +31,7 @@ function PostDetails() {
                 token
                     ? {
                         headers: {
-                            Authorization: `Bearer ${token}`
+
                         }
                     }
                     : {}
