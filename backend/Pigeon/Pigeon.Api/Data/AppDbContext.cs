@@ -27,6 +27,31 @@ namespace Pigeon.Api.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Post>()
+                .HasQueryFilter(p => !p.IsDeleted);
+
+            modelBuilder.Entity<Like>()
+                .HasQueryFilter(l => !l.Post.IsDeleted);
+
+            modelBuilder.Entity<Comment>()
+                .HasQueryFilter(c => !c.Post.IsDeleted);
+
+            modelBuilder.Entity<Bookmark>()
+                .HasQueryFilter(b => !b.Post.IsDeleted);
+
+            modelBuilder.Entity<Repost>()
+                .HasQueryFilter(r => !r.Post.IsDeleted);
+
+            modelBuilder.Entity<PostImage>()
+                .HasQueryFilter(pi => !pi.Post.IsDeleted);
+
+            modelBuilder.Entity<CommentLike>()
+                .HasQueryFilter(cl => !cl.Comment.Post.IsDeleted);
+
+            modelBuilder.Entity<Notification>()
+                .HasQueryFilter(n => n.PostId == null ||
+                    (n.Post != null && !n.Post.IsDeleted));
+
             modelBuilder.Entity<UserFollow>()
                 .HasOne(uf => uf.Follower)
                 .WithMany()

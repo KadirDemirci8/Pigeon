@@ -1,0 +1,368 @@
+
+/* PIGEON REGISTER PAGE */
+
+.register-page,
+.register-page * {
+    box-sizing: border-box;
+}
+
+.register-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    background: linear-gradient(
+        135deg,
+        #e78ac8 0%,
+        #f5a4c1 55%,
+        #ffb38e 100%
+    );
+}
+
+.register-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 45px;
+    align-items: center;
+    width: 100%;
+    max-width: 1250px;
+    min-height: 700px;
+    padding: 45px;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    border-radius: 36px;
+    background: linear-gradient(
+        135deg,
+        #912a80 0%,
+        #d94d9e 50%,
+        #ffae98 100%
+    );
+    box-shadow: 0 20px 55px rgba(111, 30, 88, 0.18);
+}
+
+.register-hero {
+    min-width: 0;
+}
+
+.register-hero-content h1 {
+    color: white;
+    font-size: clamp(34px, 4vw, 55px);
+    line-height: 1.15;
+    margin: 0 0 22px;
+}
+
+.register-hero-content h1 span {
+    display: block;
+    color: #ffe0b4;
+}
+
+.register-hero-content p {
+    max-width: 450px;
+    color: #fff4fa;
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+.register-card {
+    min-width: 0;
+    padding: 35px;
+    border-radius: 30px;
+    background: #fff3f7;
+    box-shadow: 0 15px 40px rgba(98, 29, 75, 0.15);
+}
+
+@media (max-width: 800px) {
+    .register-page {
+        padding: 15px;
+    }
+
+    .register-layout {
+        grid-template-columns: 1fr;
+        padding: 25px;
+        gap: 25px;
+    }
+
+    .register-hero {
+        text-align: center;
+    }
+
+    .register-card {
+        padding: 25px;
+    }
+}
+
+/* PIGEON REGISTER PAGE */
+
+.register-page,
+.register-page * {
+    box-sizing: border-box;
+}
+
+.register-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    background: linear-gradient(
+        135deg,
+        #e78ac8 0%,
+        #f5a4c1 55%,
+        #ffb38e 100%
+    );
+}
+
+.register-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 45px;
+    align-items: center;
+    width: 100%;
+    max-width: 1250px;
+    min-height: 700px;
+    padding: 45px;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    border-radius: 36px;
+    background: linear-gradient(
+        135deg,
+        #912a80 0%,
+        #d94d9e 50%,
+        #ffae98 100%
+    );
+    box-shadow: 0 20px 55px rgba(111, 30, 88, 0.18);
+}
+
+.register-hero {
+    min-width: 0;
+}
+
+.register-hero-content h1 {
+    color: white;
+    font-size: clamp(34px, 4vw, 55px);
+    line-height: 1.15;
+    margin: 0 0 22px;
+}
+
+.register-hero-content h1 span {
+    display: block;
+    color: #ffe0b4;
+}
+
+.register-hero-content p {
+    max-width: 450px;
+    color: #fff4fa;
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+.register-card {
+    min-width: 0;
+    padding: 35px;
+    border-radius: 30px;
+    background: #fff3f7;
+    box-shadow: 0 15px 40px rgba(98, 29, 75, 0.15);
+}
+
+@media (max-width: 800px) {
+    .register-page {
+        padding: 15px;
+    }
+
+    .register-layout {
+        grid-template-columns: 1fr;
+        padding: 25px;
+        gap: 25px;
+    }
+
+    .register-hero {
+        text-align: center;
+    }
+
+    .register-card {
+        padding: 25px;
+    }
+}
+
+/* REGISTER FORM DESIGN */
+
+.register-card > h1 {
+    margin: 0 0 28px;
+    color: #4b1735;
+    font-size: 30px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.register-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.register-card form > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.register-card label {
+    color: #51243f;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.register-card input {
+    width: 100%;
+    height: 46px;
+    padding: 0 15px;
+    border: 1px solid #e2c4d0;
+    border-radius: 14px;
+    outline: none;
+    background: #fffafd;
+    color: #4b1735;
+    font-size: 14px;
+}
+
+.register-card input:focus {
+    border-color: #f53679;
+    box-shadow: 0 0 0 3px rgba(245, 54, 121, 0.12);
+}
+
+.register-card form > button[type="submit"] {
+    width: 100%;
+    min-height: 50px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 28px;
+    background: linear-gradient(110deg, #ff9749, #f53679);
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(245, 54, 121, 0.2);
+}
+
+.register-card form > button[type="submit"]:hover:not(:disabled) {
+    filter: brightness(1.05);
+}
+
+.register-card form > button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.register-card > p {
+    margin: 22px 0 0;
+    color: #684b5d;
+    font-size: 14px;
+    text-align: center;
+}
+
+.register-card > p a {
+    color: #ef2973;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.register-card > p a:hover {
+    text-decoration: underline;
+}
+
+.register-card form > p {
+    margin: 0;
+    color: #b42352;
+    font-size: 13px;
+    text-align: center;
+}
+
+/* REGISTER CARD HEADER */
+
+.register-card-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.register-card-logo {
+    display: block;
+    width: 170px;
+    max-width: 100%;
+    height: auto;
+    max-height: 72px;
+    object-fit: contain;
+    margin-bottom: 18px;
+}
+
+.register-card-header h1 {
+    margin: 0 0 8px;
+    color: #4b1735;
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.register-card-header p {
+    margin: 0;
+    color: #73596b;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* REGISTER CARD HEADER */
+
+.register-card-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.register-card-logo {
+    display: block;
+    width: 170px;
+    max-width: 100%;
+    height: auto;
+    max-height: 72px;
+    object-fit: contain;
+    margin-bottom: 18px;
+}
+
+.register-card-header h1 {
+    margin: 0 0 8px;
+    color: #4b1735;
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.register-card-header p {
+    margin: 0;
+    color: #73596b;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.register-layout {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.register-hero {
+    position: relative;
+    z-index: 1;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+}
+
+.register-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.register-card {
+    position: relative;
+    z-index: 3;
+}

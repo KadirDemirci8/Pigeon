@@ -1,0 +1,1 @@
+Pigeon Login card correction: original background stays unchanged. Real form replaces printed form on card. Extract ZIP in Pigeon project root, run install.ps1. Backup is stored in package/backup.

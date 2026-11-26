@@ -1,0 +1,186 @@
+/* Full-size reference artwork retains the birds, landscape, and other artwork.
+   A true opaque HTML card covers ONLY the baked-in right-hand form. */
+.pigeon-login-page, .pigeon-login-page * { box-sizing: border-box; }
+.pigeon-login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background: radial-gradient(ellipse at 50% 100%, #ffbba9 0%, transparent 60%),
+                linear-gradient(130deg,#de87c8 0%,#ed8bc1 45%,#ff98a4 100%);
+    font-family: inherit;
+}
+.pigeon-login-artwork {
+    position: relative;
+    width: min(calc(100vw - 20px), calc((100vh - 20px) * 1448 / 1086));
+    max-width: 1448px;
+    aspect-ratio: 1448 / 1086;
+    flex: 0 0 auto;
+    container-type: inline-size;
+    filter: drop-shadow(0 14px 25px rgba(113,32,83,.08));
+}
+.pigeon-login-reference {
+    display: block;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    user-select: none;
+    pointer-events: none;
+}
+/* Match card footprint in the 1448 x 1086 illustration.
+   Opaque fill masks ALL preprinted Google/Forgot/Form elements. */
+.pigeon-login-artwork > .pigeon-real-card {
+    position: absolute;
+    z-index: 2;
+    left: 58.6%; top: 12.3%;
+    width: 36.8%; height: 74.6%;
+    padding: 3.0cqw 2.9cqw 2.5cqw;
+    background: linear-gradient(156deg, #fff6f9 0%, #fff0f5 52%, #ffe9f1 100%);
+    border: 1.5px solid rgba(255,255,255,.96);
+    border-radius: 6.7cqw;
+    box-shadow: 0 9px 22px rgba(113,42,91,.14);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    color: #421631;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+}
+.pigeon-real-logo {
+    align-self: center;
+    display: block;
+    width: 15.2cqw;
+    height: auto;
+    max-height: 5.9cqw;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+    margin: 0 auto 1.5cqw;
+}
+.pigeon-real-card h1 {
+    text-align: center;
+    font-size: 2.75cqw;
+    line-height: 1.13;
+    letter-spacing: -.06cqw;
+    margin: 0 0 .65cqw;
+    color: #40152f;
+    font-weight: 800;
+}
+.pigeon-card-subtitle {
+    font-size: 1.22cqw;
+    line-height: 1.35;
+    text-align: center;
+    color: #5c4156;
+    margin: 0 0 2.15cqw;
+}
+.pigeon-card-form { display: flex; flex-direction: column; gap: .7cqw; width: 100%; }
+.pigeon-card-form label { font-size: 1.18cqw; font-weight: 700; color: #431a35; }
+.pigeon-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 4.25cqw;
+    border: 1px solid #e0becf;
+    border-radius: 1.5cqw;
+    background: #fffafd;
+    overflow: hidden;
+    margin-bottom: .9cqw;
+}
+.pigeon-field > svg {
+    flex: 0 0 auto;
+    width: 1.55cqw;
+    height: 1.55cqw;
+    margin-left: 1.15cqw;
+    color: #654360;
+}
+.pigeon-field input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #3c2035;
+    font-family: inherit;
+    font-size: 1.17cqw;
+    padding: 0 .95cqw;
+}
+.pigeon-field:focus-within { border-color: #f03a86; box-shadow: 0 0 0 2px rgba(240,58,134,.12); }
+.pigeon-field input::placeholder { color: #8f7187; opacity: 1; }
+.pigeon-visibility {
+    flex: 0 0 auto;
+    height: 100%;
+    width: 3.6cqw;
+    border: 0;
+    background: transparent;
+    color: #654360;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.pigeon-visibility svg { width: 1.65cqw; height: 1.65cqw; }
+.pigeon-card-submit {
+    border: 0;
+    border-radius: 4cqw;
+    background: linear-gradient(105deg,#ff994b 0%,#ff6067 45%,#e92381 100%);
+    box-shadow: 0 .6cqw 1.4cqw rgba(222,39,109,.21);
+    color: white;
+    font-size: 1.65cqw;
+    font-weight: 750;
+    height: 5.1cqw;
+    margin-top: 1.2cqw;
+    cursor: pointer;
+}
+.pigeon-card-submit:hover:not(:disabled) { filter: brightness(1.04); }
+.pigeon-card-submit:disabled { opacity: .65; cursor: wait; }
+.pigeon-card-signup {
+    margin: auto 0 0;
+    padding-top: 1.1cqw;
+    font-size: 1.24cqw;
+    line-height: 1.3;
+    color: #674b60;
+    text-align: center;
+}
+.pigeon-card-signup a { color: #f01e77; text-decoration: none; font-weight: 750; }
+.pigeon-card-signup a:hover { text-decoration: underline; }
+.pigeon-card-error {
+    margin: 0;
+    font-size: 1.05cqw;
+    line-height: 1.25;
+    color: #ae164c;
+    text-align: center;
+}
+.pigeon-login-mobile { display: none; }
+@media (max-width: 800px) {
+    .pigeon-login-page { min-height: 100dvh; padding: 25px 16px; align-items: flex-start; }
+    .pigeon-login-artwork { display: none; }
+    .pigeon-login-mobile { display: block; width: min(100%,480px); margin: 0 auto; }
+    .pigeon-mobile-brand { text-align: center; margin-bottom: 18px; }
+    .pigeon-mobile-brand img { width: 165px; max-width: 70%; border-radius: 8px; }
+    .pigeon-mobile-brand h2 { margin: 15px 0; color: #fff; font-size: clamp(27px,7vw,38px); line-height: 1.1; }
+    .pigeon-mobile-brand h2 span { color: #ffe0ac; }
+    .pigeon-real-card, .pigeon-login-mobile .pigeon-real-card {
+        position: relative; width: 100%; height: auto;
+        min-height: 550px;
+        padding: 30px 24px 25px;
+        background: linear-gradient(156deg,#fff6f9,#fff0f5 55%,#ffe9f1);
+        border: 1px solid white;
+        border-radius: 30px;
+        box-shadow: 0 12px 36px rgba(113,42,91,.15);
+        display: flex; flex-direction: column;
+        overflow: visible;
+    }
+    .pigeon-real-logo { width: 190px; max-height: 72px; margin-bottom: 20px; }
+    .pigeon-real-card h1 { font-size: 31px; letter-spacing: -.5px; margin-bottom: 7px; }
+    .pigeon-card-subtitle { font-size: 14px; margin-bottom: 26px; }
+    .pigeon-card-form { gap: 8px; }
+    .pigeon-card-form label { font-size: 14px; }
+    .pigeon-field { height: 50px; border-radius: 15px; margin-bottom: 10px; }
+    .pigeon-field > svg { width: 19px; height: 19px; margin-left: 14px; }
+    .pigeon-field input { font-size: 14px; padding: 0 12px; }
+    .pigeon-visibility { width: 45px; }
+    .pigeon-visibility svg { width: 19px; height: 19px; }
+    .pigeon-card-submit { height: 54px; border-radius: 28px; font-size: 17px; margin-top: 16px; }
+    .pigeon-card-signup { font-size: 14px; padding-top: 30px; }
+    .pigeon-card-error { font-size: 13px; }
+}

@@ -1,0 +1,189 @@
+/* Pigeon login — faithful reference-image presentation with live form controls. */
+.pigeon-login-page,
+.pigeon-login-page * { box-sizing: border-box; }
+
+.pigeon-login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background:
+        radial-gradient(ellipse at 50% 100%, #ffbba9 0%, transparent 60%),
+        linear-gradient(130deg, #de87c8 0%, #ed8bc1 45%, #ff98a4 100%);
+}
+
+.pigeon-login-artwork {
+    position: relative;
+    width: min(calc(100vw - 20px), calc((100vh - 20px) * 1448 / 1086));
+    max-width: 1448px;
+    aspect-ratio: 1448 / 1086;
+    flex: 0 0 auto;
+    filter: drop-shadow(0 14px 25px rgba(113, 32, 83, 0.08));
+}
+
+.pigeon-login-reference {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    user-select: none;
+    pointer-events: none;
+}
+
+.pigeon-login-hotspots {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+}
+
+.pigeon-login-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.pigeon-hotspot { position: absolute; }
+
+.pigeon-hotspot-email,
+.pigeon-hotspot-password {
+    left: 59.78%;
+    width: 30.25%;
+    height: 4.91%;
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(205, 168, 190, .85);
+    border-radius: 28px;
+    background: #fcf1f6;
+    overflow: hidden;
+}
+
+.pigeon-hotspot-email { top: 38.67%; }
+.pigeon-hotspot-password { top: 47.97%; }
+
+.pigeon-hotspot-email > svg,
+.pigeon-hotspot-password > svg {
+    position: absolute;
+    left: 5%;
+    height: 40%;
+    width: auto;
+    color: #50314c;
+    pointer-events: none;
+}
+
+.pigeon-hotspot-email > input,
+.pigeon-hotspot-password > input {
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #4b2545;
+    font: inherit;
+    font-size: clamp(9px, 1.02vw, 16px);
+    width: 100%;
+    height: 100%;
+    padding-left: 14%;
+    padding-right: 8%;
+}
+
+.pigeon-hotspot-password > input { padding-right: 13%; }
+.pigeon-hotspot input::placeholder { color: #6c586f; opacity: 1; }
+.pigeon-hotspot:focus-within { outline: 2px solid #f44187; outline-offset: 2px; }
+.pigeon-password-eye {
+    position: absolute;
+    right: 3%;
+    top: 0;
+    height: 100%;
+    width: 10%;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: #4e2b47;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.pigeon-password-eye svg { width: 55%; height: 55%; }
+.pigeon-password-eye:focus-visible { outline: 2px solid #f44187; }
+
+.pigeon-hotspot-submit {
+    left: 59.68%;
+    top: 58.06%;
+    width: 30.49%;
+    height: 6.18%;
+    border-radius: 50px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #fff;
+    font-weight: 700;
+}
+.pigeon-hotspot-submit:hover:not(:disabled) {
+    background: rgba(255, 255, 255, .07);
+}
+.pigeon-hotspot-submit:focus-visible,
+.pigeon-hotspot-signup:focus-visible { outline: 3px solid #672158; outline-offset: 3px; }
+.pigeon-hotspot-submit:disabled { cursor: wait; }
+.pigeon-submit-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: inherit;
+    background: linear-gradient(100deg,#ff914c,#eb187c);
+    font-size: clamp(11px, 1.1vw, 18px);
+}
+.pigeon-hotspot-forgot { left: 78.8%; top: 53.82%; width: 11%; height: 2.7%; cursor: not-allowed; }
+.pigeon-hotspot-google { left: 59.78%; top: 70.0%; width: 30.25%; height: 5.65%; border-radius: 30px; cursor: not-allowed; }
+.pigeon-hotspot-signup { left: 74.9%; top: 78.18%; width: 14.3%; height: 4.1%; border-radius: 9px; }
+.pigeon-hotspot-signup:hover { background: rgba(245, 49, 120, .05); }
+
+.pigeon-login-error {
+    position: absolute;
+    left: 59.78%;
+    top: 64.6%;
+    width: 30.25%;
+    margin: 0;
+    background: #fff4f7;
+    color: #9a1645;
+    padding: .5em .75em;
+    text-align: center;
+    border: 1px solid #f2b3c7;
+    border-radius: 9px;
+    font-size: clamp(9px, .85vw, 14px);
+    box-shadow: 0 3px 9px rgba(120, 34, 71, .14);
+}
+
+.pigeon-login-mobile { display: none; }
+
+/* Responsive actual layout instead of shrinking the complete desktop canvas to unreadable text. */
+@media (max-width: 800px) {
+    .pigeon-login-page { min-height: 100dvh; padding: 20px 14px 36px; align-items: flex-start; }
+    .pigeon-login-artwork { display: none; }
+    .pigeon-login-mobile { display: block; width: min(100%, 480px); margin: 0 auto; }
+    .pigeon-mobile-brand { color: #fff; text-align: center; padding: 18px 0 22px; }
+    .pigeon-mobile-brand img { width: 170px; max-width: 70%; background: #fff; padding: 8px; border-radius: 7px; }
+    .pigeon-mobile-brand h1 { font-size: clamp(26px, 7vw, 36px); margin: 16px 0 0; line-height: 1.1; }
+    .pigeon-mobile-brand h1 span { color: #ffe0ac; }
+    .pigeon-mobile-card { padding: 30px 22px; border-radius: 30px; background: #fff3f7; box-shadow: 0 15px 35px rgba(99, 30, 82, .15); }
+    .pigeon-mobile-card h2 { margin: 0; text-align: center; font-size: 30px; color: #481838; }
+    .pigeon-mobile-card > p { text-align: center; color: #6c5669; line-height: 1.5; }
+    .pigeon-mobile-card form { margin-top: 25px; display: flex; flex-direction: column; gap: 10px; }
+    .pigeon-mobile-card label { color: #4b2341; font-weight: 700; }
+    .pigeon-mobile-card input { height: 52px; width: 100%; border: 1px solid #d9bacb; border-radius: 14px; background: #fffafd; color: #4b2341; padding: 0 15px; font-size: 15px; }
+    .pigeon-mobile-card input:focus { outline: 2px solid #ed5e95; }
+    .pigeon-mobile-password { position: relative; }
+    .pigeon-mobile-password input { padding-right: 55px; }
+    .pigeon-mobile-password button { position: absolute; right: 6px; top: 5px; width: 44px; height: 42px; border: 0; background: transparent; color: #684159; cursor: pointer; }
+    .pigeon-mobile-submit { min-height: 52px; margin-top: 20px; border: 0; border-radius: 35px; background: linear-gradient(100deg,#ff9345,#f22183); color: #fff; font-size: 17px; font-weight: 700; cursor: pointer; }
+    .pigeon-mobile-submit:disabled { opacity: .65; cursor: wait; }
+    .pigeon-mobile-signup a { color: #ed1d77; text-decoration: none; font-weight: 700; }
+    .pigeon-mobile-error { color: #b7194a; font-size: 14px; }
+}

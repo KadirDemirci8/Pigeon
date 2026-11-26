@@ -1,0 +1,58 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 260">
+  <defs>
+    <linearGradient id="wing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFCE86"/>
+      <stop offset="48%" stop-color="#FF777F"/>
+      <stop offset="100%" stop-color="#E72583"/>
+    </linearGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFF9E9"/>
+      <stop offset="100%" stop-color="#FFC5CD"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Tail -->
+  <path d="M130 180 Q65 205 35 176 Q75 228 142 207 Z"
+        fill="#FF7C9E"/>
+  <path d="M133 189 Q74 233 51 211 Q96 248 156 211 Z"
+        fill="#F24C88"/>
+
+  <!-- Far wing -->
+  <path d="M166 139 Q120 65 108 40 Q148 56 190 115 Z"
+        fill="#FFAC8D"/>
+
+  <!-- Main raised wing -->
+  <path d="M162 158
+           Q98 124 64 28
+           Q105 45 139 92
+           Q109 41 100 12
+           Q153 43 180 112
+           Q168 51 166 21
+           Q211 76 213 151 Z"
+        fill="url(#wing)"/>
+
+  <!-- Body -->
+  <path d="M112 171
+           Q159 183 198 133
+           Q218 106 250 107
+           Q277 108 287 130
+           Q263 146 246 172
+           Q203 223 150 207
+           Q126 199 112 171 Z"
+        fill="url(#body)"/>
+
+  <!-- Head -->
+  <circle cx="266" cy="121" r="26" fill="#FFF3E9"/>
+  <circle cx="274" cy="115" r="4" fill="#54233F"/>
+
+  <!-- Beak -->
+  <path d="M287 122 L310 130 L287 137 Z"
+        fill="#FF873A"/>
+
+  <!-- Lower wing -->
+  <path d="M191 169
+           Q153 227 91 227
+           Q153 246 209 194 Z"
+        fill="#FFA0AD"/>
+</svg>

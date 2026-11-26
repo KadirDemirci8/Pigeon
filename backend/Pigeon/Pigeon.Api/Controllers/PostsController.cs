@@ -44,9 +44,16 @@ namespace Pigeon.Api.Controllers
                 return Unauthorized();
             }
 
+            var content = request.Content?.Trim();
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return BadRequest("Post cannot be empty.");
+            }
+
             var post = new Post
             {
-                Content = request.Content,
+                Content = content,
                 UserId = userId.Value
             };
 
@@ -168,15 +175,16 @@ namespace Pigeon.Api.Controllers
 
                 try
                 {
+                    using var infoStream = image.OpenReadStream();
+                    var info = await Image.IdentifyAsync(infoStream);
+
+                    if (info.Width > 4096 || info.Height > 4096)
+                    {
+                        return BadRequest("Image dimensions must not exceed 4096 pixels.");
+                    }
+
                     using var imageStream = image.OpenReadStream();
                     using var decodedImage = await Image.LoadAsync(imageStream);
-
-                    if (decodedImage.Width > 4096 ||
-                        decodedImage.Height > 4096)
-                    {
-                        return BadRequest(
-                            "Image dimensions must not exceed 4096 pixels.");
-                    }
                 }
                 catch (UnknownImageFormatException)
                 {
@@ -642,11 +650,18 @@ namespace Pigeon.Api.Controllers
                 });
             }
 
-            if (string.IsNullOrWhiteSpace(request.Content))
-                return BadRequest("Post content cannot be empty.");
+            var content = request.Content?.Trim() ?? string.Empty;
 
+            var hasImages = await _context.PostImages
+                .AnyAsync(pi => pi.PostId == id);
 
-            post.Content = request.Content.Trim();
+            if (string.IsNullOrWhiteSpace(content) && !hasImages)
+            {
+                return BadRequest(
+                    "A post must contain text or at least one image.");
+            }
+
+            post.Content = content;
             post.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -681,7 +696,7 @@ namespace Pigeon.Api.Controllers
             if (post.UserId != userId.Value)
                 return Forbid();
 
-            if (DateTime.UtcNow >= post.CreatedAt.ToUniversalTime().AddHours(1))
+            if (DateTime.UtcNow >= post.CreatedAt.AddHours(1))
             {
                 return StatusCode(403, new
                 {
@@ -928,7 +943,8 @@ namespace Pigeon.Api.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            var post = await _context.Posts.FindAsync(id);
+            var post = await _context.Posts
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (post == null)
                 return NotFound();
@@ -936,79 +952,13 @@ namespace Pigeon.Api.Controllers
             if (post.UserId != userId.Value)
                 return Forbid();
 
-            var imageUrls = await _context.PostImages
-                .Where(pi => pi.PostId == id)
-                .Select(pi => pi.ImageUrl)
-                .ToListAsync();
-
-            var bookmarks = await _context.Bookmarks
-                .Where(b => b.PostId == id)
-                .ToListAsync();
-
-            _context.Bookmarks.RemoveRange(bookmarks);
-
-            var reposts = await _context.Reposts
-                .Where(r => r.PostId == id)
-                .ToListAsync();
-
-            _context.Reposts.RemoveRange(reposts);
-
-            var commentLikes = await _context.CommentLikes
-                .Where(cl => cl.Comment.PostId == id)
-                .ToListAsync();
-
-            _context.CommentLikes.RemoveRange(commentLikes);
-
-            var comments = await _context.Comments
-                .Where(c => c.PostId == id)
-                .ToListAsync();
-
-            _context.Comments.RemoveRange(comments);
-
-            _context.Posts.Remove(post);
+            post.IsDeleted = true;
+            post.DeletedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
-            // Veritabanı işlemi başarılı olduktan sonra fiziksel dosyaları temizle.
-            var uploadsFolder = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                "uploads",
-                "posts"
-            );
-
-            foreach (var imageUrl in imageUrls)
-            {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(imageUrl) ||
-                        !imageUrl.StartsWith(
-                            "/uploads/posts/",
-                            StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-
-                    var fileName = Path.GetFileName(imageUrl);
-                    var filePath = Path.Combine(uploadsFolder, fileName);
-
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-                }
-                catch (Exception ex) when (
-                    ex is IOException ||
-                    ex is UnauthorizedAccessException)
-                {
-                    Console.Error.WriteLine(
-                        $"Failed to delete post image: {ex.Message}");
-                }
-            }
-
             return NoContent();
         }
-
 
 
         [HttpPost("{id}/like")]
@@ -1220,8 +1170,14 @@ namespace Pigeon.Api.Controllers
         {
             var userId = GetCurrentUserId();
 
+            var postExists = await _context.Posts
+                .AnyAsync(p => p.Id == id);
+
+            if (!postExists)
+                return NotFound("Post not found.");
+
             var comments = await _context.Comments
-                .AsNoTracking()
+                        .AsNoTracking()
                 .Where(c => c.PostId == id)
                 .OrderBy(c => c.CreatedAt)
                 .Select(c => new

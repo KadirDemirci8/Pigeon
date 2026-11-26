@@ -100,6 +100,35 @@ namespace Pigeon.Api
             if (app.Environment.IsDevelopment()) app.MapOpenApi();
 
             app.UseHttpsRedirection();
+
+            // Prevent access to images belonging to deleted posts.
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/uploads/posts"))
+                {
+                    var imageUrl = context.Request.Path.Value;
+
+                    var db = context.RequestServices
+                        .GetRequiredService<AppDbContext>();
+
+                    var imageExists = await db.PostImages
+                        .AsNoTracking()
+                        .AnyAsync(pi => pi.ImageUrl == imageUrl);
+
+                    if (!imageExists)
+                    {
+                        context.Response.StatusCode =
+                            StatusCodes.Status404NotFound;
+
+                        return;
+                    }
+
+                    context.Response.Headers.CacheControl = "no-store";
+                }
+
+                await next();
+            });
+
             app.UseStaticFiles();
             app.UseCors("ReactApp");
             app.UseAuthentication();

@@ -126,15 +126,19 @@ const handleSaveEdit = async () => {
         return
     }
 
-    if (!content && content !== displayContent.trim()) {
-        alert('Removing all post text is not supported yet.')
-        return
-    }
 
     setIsSavingEdit(true)
 
-    try {
-        if (content !== displayContent.trim()) {
+try {
+    const saveImagesFirst = !content && hasImageChanges
+
+    if (saveImagesFirst) {
+        const imagesSaved = await handleSaveImages()
+
+        if (!imagesSaved) return
+    }
+
+    if (content !== displayContent.trim()) {
             const token = sessionStorage.getItem('userId')
 
             const response = await axios.put(
@@ -152,7 +156,7 @@ const handleSaveEdit = async () => {
             setDisplayUpdatedAt(response.data.updatedAt)
         }
 
-        if (hasImageChanges) {
+        if (hasImageChanges && !saveImagesFirst) {
             const imagesSaved = await handleSaveImages()
 
             if (!imagesSaved) return

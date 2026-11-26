@@ -218,13 +218,16 @@ namespace Pigeon.Api.Controllers
             // Görselin tamamını okuyarak doğrula
             try
             {
-                using var stream = file.OpenReadStream();
-                using var image = await Image.LoadAsync(stream);
+                using var infoStream = file.OpenReadStream();
+                var info = await Image.IdentifyAsync(infoStream);
 
-                if (image.Width > 4096 || image.Height > 4096)
+                if (info.Width > 4096 || info.Height > 4096)
                 {
                     return BadRequest("Image dimensions must not exceed 4096 pixels.");
                 }
+
+                using var stream = file.OpenReadStream();
+                using var image = await Image.LoadAsync(stream);
             }
             catch (SixLabors.ImageSharp.UnknownImageFormatException)
             {
@@ -246,18 +249,42 @@ namespace Pigeon.Api.Controllers
             var fileName = $"{Guid.NewGuid()}{extension}";
             var filePath = Path.Combine(folder, fileName);
 
-            await using (var stream = new FileStream(filePath, FileMode.CreateNew))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            // Önceki fotoğrafın adresini sakla
             var oldPhotoUrl = user.ProfileImageUrl;
 
-            // Yeni fotoğrafı veritabanına kaydet
-            user.ProfileImageUrl = $"/uploads/profiles/{fileName}";
+            try
+            {
+                await using (var stream = new FileStream(filePath, FileMode.CreateNew))
+                {
+                    await file.CopyToAsync(stream);
+                }
 
-            await _context.SaveChangesAsync();
+                user.ProfileImageUrl = $"/uploads/profiles/{fileName}";
+
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                user.ProfileImageUrl = oldPhotoUrl;
+
+                try
+                {
+                    if (System.IO.File.Exists(filePath))
+                        System.IO.File.Delete(filePath);
+                }
+                catch (Exception cleanupError)
+                    when (cleanupError is IOException ||
+                          cleanupError is UnauthorizedAccessException)
+                {
+                    Console.Error.WriteLine(cleanupError.Message);
+                }
+
+                Console.Error.WriteLine($"Profile photo upload failed: {ex}");
+
+                return StatusCode(500, new
+                {
+                    message = "Failed to upload profile photo."
+                });
+            }
 
             // Eski fotoğraf varsa güvenli şekilde sil
             if (!string.IsNullOrEmpty(oldPhotoUrl))
