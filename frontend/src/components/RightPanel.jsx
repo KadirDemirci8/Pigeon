@@ -4,8 +4,9 @@ import { Link } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import axios from 'axios'
 import './RightPanel.css'
+import { API_BASE } from '../services/apiClient'
 
-const API_URL = 'https://localhost:7151'
+const API_URL = API_BASE
 
 function RightPanel() {
     const [trends, setTrends] = useState([])

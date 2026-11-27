@@ -2,6 +2,7 @@
 import PostCard from './PostCard'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { API_BASE } from '../services/apiClient'
 
 function Feed({
     activeTab,
@@ -24,8 +25,8 @@ function Feed({
                 const token = sessionStorage.getItem('userId')
 
                 const endpoint = activeTab === 'following'
-                    ? 'https://localhost:7151/api/posts/following'
-                    : 'https://localhost:7151/api/posts'
+                    ? `${API_BASE}/api/posts/following`
+                    : `${API_BASE}/api/posts`
 
                 const response = await axios.get(endpoint, {
                     headers: {

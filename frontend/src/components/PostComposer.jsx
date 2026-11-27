@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import './PostComposer.css'
 import { Image, Smile, BarChart3, X } from 'lucide-react'
 import axios from 'axios'
+import { API_BASE } from '../services/apiClient'
 
 function PostComposer({ onPostCreated, currentUser }) {
     const [content, setContent] = useState('')
@@ -107,7 +108,7 @@ const handlePost = async () => {
         })
 
         await axios.post(
-            'https://localhost:7151/api/posts/with-images',
+            `${API_BASE}/api/posts/with-images`,
             formData,
             {
                 headers: {
@@ -138,7 +139,7 @@ const handlePost = async () => {
                 <div className="composer-avatar">
                     {currentUser?.profileImageUrl ? (
                         <img
-                            src={`https://localhost:7151${currentUser.profileImageUrl}`}
+                            src={`${API_BASE}${currentUser.profileImageUrl}`}
                             alt="Your profile"
                             style={{
                                 width: '100%',

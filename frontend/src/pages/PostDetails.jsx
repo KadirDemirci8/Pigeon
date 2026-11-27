@@ -4,6 +4,7 @@ import { useParams, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import MainLayout from '../components/MainLayout'
 import PostCard from '../components/PostCard'
+import { API_BASE } from '../services/apiClient'
 
 function PostDetails() {
     const { id } = useParams()
@@ -27,7 +28,7 @@ function PostDetails() {
 
                 
             const response = await axios.get(
-                `https://localhost:7151/api/posts/${id}`,
+                `${API_BASE}/api/posts/${id}`,
                 token
                     ? {
                         headers: {

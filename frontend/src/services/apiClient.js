@@ -3,7 +3,13 @@ import axios from 'axios'
 // The session JWT is HttpOnly: JavaScript must never read or store it.
 axios.defaults.withCredentials = true
 
-const API_BASE = 'https://localhost:7151'
+export const API_BASE = import.meta.env.VITE_API_BASE_URL
+    ?.trim()
+    .replace(/\/+$/, '')
+
+if (!API_BASE) {
+    throw new Error('VITE_API_BASE_URL is not configured.')
+}
 let csrfToken = null
 let csrfPromise = null
 
@@ -29,7 +35,7 @@ axios.interceptors.request.use(async config => {
     const method = (config.method || 'get').toLowerCase()
     const unsafe = ['post', 'put', 'patch', 'delete'].includes(method)
     const url = config.url || ''
-    if (unsafe && (url.startsWith(API_BASE) || url.startsWith('/api/'))) {
+    if (unsafe && url.startsWith(`${API_BASE}/api/`)) {
         const csrf = await getCsrfToken()
         config.headers.set('X-CSRF-TOKEN', csrf)
     }

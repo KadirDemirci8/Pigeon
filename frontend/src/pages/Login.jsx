@@ -4,8 +4,9 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Mail, LockKeyhole } from 'lucide-react'
 import AuthContext from '../context/AuthContext'
 import './Login.css'
+import { API_BASE } from '../services/apiClient'
 
-const API_BASE = 'https://localhost:7151'
+
 
 function Login() {
     const [email, setEmail] = useState('')

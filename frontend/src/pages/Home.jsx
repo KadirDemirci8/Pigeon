@@ -9,6 +9,7 @@ import AuthContext from '../context/AuthContext'
 import MainLayout from '../components/MainLayout'
 import PostComposer from '../components/PostComposer'
 import Feed from '../components/Feed'
+import { API_BASE } from '../services/apiClient'
 
 import './Home.css'
 

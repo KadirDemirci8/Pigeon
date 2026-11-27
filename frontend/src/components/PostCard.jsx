@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo   } from 'react'
 import axios from 'axios'
 import { Link, useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
+import { API_BASE } from '../services/apiClient'
 
 
 function PostCard({ post, currentUserId, currentUser, onPostDeleted, onBookmarkRemoved, onRepostRemoved, repostedBy, autoOpenComments = false, targetCommentId = null}) {
@@ -78,7 +79,7 @@ const handleSaveImages = async () => {
         })
 
         const response = await axios.put(
-            `https://localhost:7151/api/posts/${post.id}/images`,
+            `${API_BASE}/api/posts/${post.id}/images`,
             formData,
             {
                 headers: {
@@ -142,7 +143,7 @@ try {
             const token = sessionStorage.getItem('userId')
 
             const response = await axios.put(
-                `https://localhost:7151/api/posts/${post.id}`,
+                `${API_BASE}/api/posts/${post.id}`,
                 { content },
                 {
                     headers: {
@@ -184,7 +185,7 @@ try {
                 const token = sessionStorage.getItem('userId')
 
                 await axios.delete(
-                    `https://localhost:7151/api/posts/${post.id}`,
+                    `${API_BASE}/api/posts/${post.id}`,
                     {
                         headers: {
 
@@ -206,7 +207,7 @@ try {
 
         if (isLiked) {
             await axios.delete(
-                `https://localhost:7151/api/posts/${post.id}/like`,
+                `${API_BASE}/api/posts/${post.id}/like`,
                 {
                     headers: {
 
@@ -218,7 +219,7 @@ try {
             setLikeCount(prev => prev - 1)
         } else {
             await axios.post(
-                `https://localhost:7151/api/posts/${post.id}/like`,
+                `${API_BASE}/api/posts/${post.id}/like`,
                 {},
                 {
                     headers: {
@@ -253,7 +254,7 @@ const handleBookmark = async () => {
 
         if (isBookmarked) {
             await axios.delete(
-                `https://localhost:7151/api/bookmarks/${post.id}`,
+                `${API_BASE}/api/bookmarks/${post.id}`,
                 {
                     headers: {
 
@@ -265,7 +266,7 @@ const handleBookmark = async () => {
             onBookmarkRemoved?.(post.id)
         } else {
             await axios.post(
-                `https://localhost:7151/api/bookmarks/${post.id}`,
+                `${API_BASE}/api/bookmarks/${post.id}`,
                 {},
                 {
                     headers: {
@@ -299,7 +300,7 @@ const handleRepost = async () => {
 
         if (isReposted) {
             await axios.delete(
-                `https://localhost:7151/api/reposts/${post.id}`,
+                `${API_BASE}/api/reposts/${post.id}`,
                 {
                     headers: {
 
@@ -312,7 +313,7 @@ const handleRepost = async () => {
             onRepostRemoved?.(post.id)
         } else {
             await axios.post(
-                `https://localhost:7151/api/reposts/${post.id}`,
+                `${API_BASE}/api/reposts/${post.id}`,
                 {},
                 {
                     headers: {
@@ -496,7 +497,7 @@ const handleComment = async () => {
                     const token = sessionStorage.getItem('userId')
 
                     await axios.post(
-                        `https://localhost:7151/api/posts/${post.id}/comments`,
+                        `${API_BASE}/api/posts/${post.id}/comments`,
                         {
                             content: commentContent.trim()
                         },
@@ -508,7 +509,7 @@ const handleComment = async () => {
                     )
 
                     const response = await axios.get(
-                    `https://localhost:7151/api/posts/${post.id}/comments`,
+                    `${API_BASE}/api/posts/${post.id}/comments`,
                     {
                         headers: {
 
@@ -534,7 +535,7 @@ const handleComment = async () => {
                 const token = sessionStorage.getItem('userId')
 
                 const response = await axios.get(
-                    `https://localhost:7151/api/posts/${post.id}/comments`,
+                    `${API_BASE}/api/posts/${post.id}/comments`,
                     {
                         headers: {
 
@@ -608,7 +609,7 @@ const handleReply = async () => {
         const token = sessionStorage.getItem('userId')
 
         await axios.post(
-            `https://localhost:7151/api/posts/${post.id}/comments`,
+            `${API_BASE}/api/posts/${post.id}/comments`,
             {
                 content: replyContent.trim(),
                 parentCommentId: replyToComment.id
@@ -621,7 +622,7 @@ const handleReply = async () => {
         )
 
         const response = await axios.get(
-            `https://localhost:7151/api/posts/${post.id}/comments`,
+            `${API_BASE}/api/posts/${post.id}/comments`,
             {
                 headers: {
 
@@ -659,7 +660,7 @@ const handleSaveCommentEdit = async (commentId) => {
     try {
         const token = sessionStorage.getItem('userId')
         const response = await axios.put(
-            `https://localhost:7151/api/posts/comments/${commentId}`,
+            `${API_BASE}/api/posts/comments/${commentId}`,
             { content },
             { headers: {} }
         )
@@ -696,7 +697,7 @@ const handleDeleteComment = async (commentId) => {
     try {
 
         await axios.delete(
-            `https://localhost:7151/api/posts/comments/${commentId}`,
+            `${API_BASE}/api/posts/comments/${commentId}`,
             {
                 headers: {
 
@@ -732,7 +733,7 @@ const handleCommentLike = async (commentId, isLiked) => {
 
         if (isLiked) {
             await axios.delete(
-                `https://localhost:7151/api/comments/${commentId}/like`,
+                `${API_BASE}/api/comments/${commentId}/like`,
                 {
                     headers: {
 
@@ -741,7 +742,7 @@ const handleCommentLike = async (commentId, isLiked) => {
             )
         } else {
             await axios.post(
-                `https://localhost:7151/api/comments/${commentId}/like`,
+                `${API_BASE}/api/comments/${commentId}/like`,
                 {},
                 {
                     headers: {
@@ -788,7 +789,7 @@ return (
                 >
                     {post.profileImageUrl ? (
                         <img
-                            src={`https://localhost:7151${post.profileImageUrl}`}
+                            src={`${API_BASE}${post.profileImageUrl}`}
                             alt={`${post.displayName}'s profile`}
                             style={{
                                 width: '100%',
@@ -876,7 +877,7 @@ return (
                     className="post-edit-image-item"
                 >
                     <img
-                        src={`https://localhost:7151${image.imageUrl}`}
+                        src={`${API_BASE}${image.imageUrl}`}
                         alt="Post attachment"
                     />
 
@@ -1028,7 +1029,7 @@ return (
                 aria-label={`Open image ${index + 1} of ${displayImages.length}`}
             >
                 <img
-                    src={`https://localhost:7151${imageUrl}`}
+                    src={`${API_BASE}${imageUrl}`}
                     alt={`Post image ${index + 1}`}
                     loading="lazy"
                 />
@@ -1202,7 +1203,7 @@ return (
                 <div className="comment-avatar">
                     {comment.profileImageUrl ? (
                         <img
-                            src={`https://localhost:7151${comment.profileImageUrl}`}
+                            src={`${API_BASE}${comment.profileImageUrl}`}
                             alt={`${comment.displayName}'s profile`}
                             style={{
                                 width: '100%',
@@ -1400,7 +1401,7 @@ return (
                 <div className="comment-composer-avatar">
                 {currentUser?.profileImageUrl ? (
                     <img
-                        src={`https://localhost:7151${currentUser.profileImageUrl}`}
+                        src={`${API_BASE}${currentUser.profileImageUrl}`}
                         alt="Your profile"
                         style={{
                             width: '100%',
@@ -1481,7 +1482,7 @@ return (
 )}
 
         <img
-            src={`https://localhost:7151${displayImages[activeImageIndex]}`}
+            src={`${API_BASE}${displayImages[activeImageIndex]}`}
             alt={`Post image ${activeImageIndex + 1}`}
             onClick={(e) => e.stopPropagation()}
         />

@@ -7,8 +7,9 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { House, Compass, Bell, Bookmark, UserRound } from 'lucide-react'
 import RightPanel from './RightPanel'
 import MobileNav from './MobileNav'
+import { API_BASE } from '../services/apiClient'
 
-const API_URL = 'https://localhost:7151'
+const API_URL = API_BASE
 
 function MainLayout({ children, onPostClick }) {
     const [unreadCount, setUnreadCount] = useState(0)

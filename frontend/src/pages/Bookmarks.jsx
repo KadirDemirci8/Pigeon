@@ -5,6 +5,7 @@ import PostCard from '../components/PostCard'
 import './Bookmarks.css'
 import MainLayout from '../components/MainLayout'
 import { Bookmark } from 'lucide-react'
+import { API_BASE } from '../services/apiClient'
 
 function Bookmarks() {
     const [bookmarks, setBookmarks] = useState([])
@@ -20,7 +21,7 @@ function Bookmarks() {
             const token = sessionStorage.getItem('userId')
 
             const response = await axios.get(
-                'https://localhost:7151/api/bookmarks',
+                `${API_BASE}/api/bookmarks`,
                 {
                     headers: {
 

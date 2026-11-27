@@ -7,6 +7,7 @@ import './Profile.css'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Camera, LogOut } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { API_BASE } from '../services/apiClient'
 
 
 function Profile() {
@@ -88,7 +89,7 @@ useEffect(() => {
 
         try {
             const response = await axios.get(
-                `https://localhost:7151/api/users/${username}`
+                `${API_BASE}/api/users/${username}`
             )
 
             setProfile(response.data)
@@ -96,7 +97,7 @@ useEffect(() => {
             const token = sessionStorage.getItem('userId')
 
             const followResponse = await axios.get(
-                `https://localhost:7151/api/follows/${response.data.id}/status`,
+                `${API_BASE}/api/follows/${response.data.id}/status`,
                 {
                     headers: {
 
@@ -110,7 +111,7 @@ useEffect(() => {
 
             
             const postsResponse = await axios.get(
-                `https://localhost:7151/api/posts/user/${username}`,
+                `${API_BASE}/api/posts/user/${username}`,
                 {
                     headers: {
 
@@ -144,7 +145,7 @@ useEffect(() => {
             if (!currentUsername) return
 
             const response = await axios.get(
-                `https://localhost:7151/api/users/${currentUsername}`
+                `${API_BASE}/api/users/${currentUsername}`
             )
 
             setCurrentUser(response.data)
@@ -198,7 +199,7 @@ const fetchFollowUsers = async (type) => {
         const token = sessionStorage.getItem('userId')
 
         const response = await axios.get(
-            `https://localhost:7151/api/follows/${profile.id}/${type}`,
+            `${API_BASE}/api/follows/${profile.id}/${type}`,
             {
                 headers: {
 
@@ -213,7 +214,7 @@ const fetchFollowUsers = async (type) => {
         await Promise.all(
             response.data.map(async (user) => {
                 const statusResponse = await axios.get(
-                    `https://localhost:7151/api/follows/${user.id}/status`,
+                    `${API_BASE}/api/follows/${user.id}/status`,
                     {
                         headers: {
 
@@ -250,7 +251,7 @@ const openFollowModal = async (type) => {
         const token = sessionStorage.getItem('userId')
 
         const response = await axios.get(
-            `https://localhost:7151/api/follows/${profile.id}/status`,
+            `${API_BASE}/api/follows/${profile.id}/status`,
             {
                 headers: {
 
@@ -287,7 +288,7 @@ const handleListFollow = async (userId) => {
     try {
         if (currentlyFollowing) {
             await axios.delete(
-                `https://localhost:7151/api/follows/${userId}`,
+                `${API_BASE}/api/follows/${userId}`,
                 {
                     headers: {
 
@@ -296,7 +297,7 @@ const handleListFollow = async (userId) => {
             )
         } else {
             await axios.post(
-                `https://localhost:7151/api/follows/${userId}`,
+                `${API_BASE}/api/follows/${userId}`,
                 {},
                 {
                     headers: {
@@ -363,7 +364,7 @@ const handleFollow = async () => {
 
         if (isFollowing) {
             await axios.delete(
-                `https://localhost:7151/api/follows/${profile.id}`,
+                `${API_BASE}/api/follows/${profile.id}`,
                 {
                     headers: {
 
@@ -375,7 +376,7 @@ const handleFollow = async () => {
             setFollowersCount(prev => prev - 1)
         } else {
             await axios.post(
-                `https://localhost:7151/api/follows/${profile.id}`,
+                `${API_BASE}/api/follows/${profile.id}`,
                 {},
                 {
                     headers: {
@@ -410,7 +411,7 @@ const handleSaveProfile = async () => {
         const token = sessionStorage.getItem('userId')
 
         const response = await axios.put(
-            'https://localhost:7151/api/users/me',
+            `${API_BASE}/api/users/me`,
             {
                 displayName,
                 bio
@@ -429,7 +430,7 @@ const handleSaveProfile = async () => {
                 formData.append('file', editPhoto)
 
                 const photoResponse = await axios.post(
-                    'https://localhost:7151/api/users/me/photo',
+                    `${API_BASE}/api/users/me/photo`,
                     formData,
                     {
                         headers: {
@@ -474,7 +475,7 @@ const fetchPosts = async () => {
         const token = sessionStorage.getItem('userId')
 
         const response = await axios.get(
-            `https://localhost:7151/api/posts/user/${username}`,
+            `${API_BASE}/api/posts/user/${username}`,
             {
                 headers: {
 
@@ -496,7 +497,7 @@ const fetchReposts = async () => {
         const token = sessionStorage.getItem('userId')
 
         const response = await axios.get(
-            `https://localhost:7151/api/reposts/user/${username}`,
+            `${API_BASE}/api/reposts/user/${username}`,
             {
                 headers: {
 
@@ -644,7 +645,7 @@ return (
                                             <div className="follow-user-avatar">
                                                 {user.profileImageUrl ? (
                                                     <img
-                                                        src={`https://localhost:7151${user.profileImageUrl}`}
+                                                        src={`${API_BASE}${user.profileImageUrl}`}
                                                         alt={user.displayName}
                                                     />
                                                 ) : (
@@ -698,7 +699,7 @@ return (
                                 <img
                                     src={
                                         photoPreview ||
-                                        `https://localhost:7151${profile.profileImageUrl}`
+                                        `${API_BASE}${profile.profileImageUrl}`
                                     }
                                     alt="Profile preview"
                                     style={{
@@ -799,7 +800,7 @@ return (
                     <div className="profile-avatar">
                     {profile.profileImageUrl ? (
                         <img
-                        src={`https://localhost:7151${profile.profileImageUrl}`}
+                        src={`${API_BASE}${profile.profileImageUrl}`}
                         alt={`${profile.displayName}'s profile`}
                         style={{
                             width: "100%",

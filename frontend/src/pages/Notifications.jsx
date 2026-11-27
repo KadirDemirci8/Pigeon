@@ -4,6 +4,7 @@ import axios from 'axios'
 import MainLayout from '../components/MainLayout'
 import { useNavigate } from 'react-router-dom'
 import './Notifications.css'
+import { API_BASE } from '../services/apiClient'
 
 function formatNotificationTime(dateString) {
     const utcDate = /(?:Z|[+-]\d{2}:\d{2})$/i.test(dateString)
@@ -45,7 +46,7 @@ function Notifications() {
             const token = sessionStorage.getItem('userId')
 
             await axios.patch(
-                'https://localhost:7151/api/notifications/read-all',
+                `${API_BASE}/api/notifications/read-all`,
                 {},
                 {
                     headers: {
@@ -86,7 +87,7 @@ function Notifications() {
             const token = sessionStorage.getItem('userId')
 
             await axios.post(
-                `https://localhost:7151/api/follows/${actorId}`,
+                `${API_BASE}/api/follows/${actorId}`,
                 {},
                 {
                     headers: {
@@ -115,7 +116,7 @@ function Notifications() {
 
             if (!notification.isRead) {
                 await axios.patch(
-                    `https://localhost:7151/api/notifications/${notification.id}/read`,
+                    `${API_BASE}/api/notifications/${notification.id}/read`,
                     {},
                     {
                         headers: {
@@ -181,7 +182,7 @@ function Notifications() {
                 const token = sessionStorage.getItem('userId')
 
                 const response = await axios.get(
-                    'https://localhost:7151/api/notifications',
+                    `${API_BASE}/api/notifications`,
                     {
                         params: {
                             unreadOnly: activeTab === 'unread'
@@ -240,7 +241,7 @@ function Notifications() {
             const results = await Promise.allSettled(
                 actorIds.map(async actorId => {
                     const response = await axios.get(
-                        `https://localhost:7151/api/follows/${actorId}/status`,
+                        `${API_BASE}/api/follows/${actorId}/status`,
                         {
                             headers: {
 
@@ -376,7 +377,7 @@ function Notifications() {
                                         <div className="notification-avatar">
                                             {notification.actorProfileImageUrl ? (
                                                 <img
-                                                    src={`https://localhost:7151${notification.actorProfileImageUrl}`}
+                                                    src={`${API_BASE}${notification.actorProfileImageUrl}`}
                                                     alt={displayName}
                                                 />
                                             ) : (

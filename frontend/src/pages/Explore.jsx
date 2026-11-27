@@ -6,6 +6,7 @@ import './Explore.css'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import PostCard from '../components/PostCard'   
+import { API_BASE } from '../services/apiClient'
 
 function Explore() {
     const navigate = useNavigate()
@@ -35,7 +36,7 @@ useEffect(() => {
 
         try {
             const response = await axios.get(
-                'https://localhost:7151/api/users/search',
+                `${API_BASE}/api/users/search`,
                 {
                     params: {
                         q: search.trim(),

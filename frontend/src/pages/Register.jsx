@@ -3,6 +3,7 @@ import axios from 'axios'
 import { useNavigate, Link } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import './Register.css'
+import { API_BASE } from '../services/apiClient'
 
 function Register() {
     const [username, setUsername] = useState('')
@@ -29,7 +30,7 @@ function Register() {
         setIsLoading(true)
 
         try {
-            const response = await axios.post('https://localhost:7151/api/auth/register', {
+            const response = await axios.post(`${API_BASE}/api/auth/register`, {
                 username,
                 displayName,
                 email,

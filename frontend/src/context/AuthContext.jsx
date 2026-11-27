@@ -1,9 +1,8 @@
 import { createContext, useState, useEffect, useCallback, useContext } from 'react'
 import axios from 'axios'
-import { clearCsrfToken } from '../services/apiClient'
+import { API_BASE, clearCsrfToken } from '../services/apiClient'
 
 const AuthContext = createContext(null)
-const API_BASE = 'https://localhost:7151'
 
 export function AuthProvider({ children }) {
     const [isAuthenticated, setAuthenticated] = useState(false)

@@ -13,12 +13,13 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Explore from './pages/Explore'
 import Notifications from './pages/Notifications'
 import PostDetails from './pages/PostDetails'
+import { API_BASE } from './services/apiClient'
 
 function App() {
     const [message, setMessage] = useState('Loading...')
 
     useEffect(() => {
-        axios.get('https://localhost:7151/api/hello')
+        axios.get(`${API_BASE}/api/hello`)
             .then((response) => {
                 setMessage(response.data.message)
             })
